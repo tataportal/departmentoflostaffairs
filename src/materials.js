@@ -16,6 +16,11 @@ export async function createSurfaceLibrary(anisotropy=8){
     for(let channel=0;channel<3;channel++)data.data[i+channel]=128+(.58*data.data[i+channel]+.42*l-128)*.78;
    }ctx.putImageData(data,0,0);
   }
+  if(kind==='plaster'){
+   const data=ctx.getImageData(0,0,size,size);
+   for(let i=0;i<data.data.length;i+=4)for(let j=0;j<3;j++)data.data[i+j]=190+(data.data[i+j]-190)*.38;
+   ctx.putImageData(data,0,0);
+  }
   const color=new THREE.CanvasTexture(c);color.colorSpace=THREE.SRGBColorSpace;
   const heightCanvas=document.createElement('canvas');heightCanvas.width=heightCanvas.height=size;
   const heightCtx=heightCanvas.getContext('2d'),heightData=ctx.getImageData(0,0,size,size);
@@ -37,7 +42,7 @@ export async function createSurfaceLibrary(anisotropy=8){
   const material=new THREE.MeshPhysicalMaterial({color,map:m.color,bumpMap:m.bump,roughnessMap:m.rough,...specs[kind],...options});
   material.userData.surface=kind;return material;
  }
- return {wood:surface('wood','#d5c6b3'),dark:surface('wood','#8e8172'),edge:surface('wood','#615b50'),wall:surface('plaster','#e0dace'),fabric:surface('linen','#d0cbb8'),fabricDark:surface('linen','#828d78'),tatami:surface('tatami','#c3c6a0'),paper:surface('plaster','#d7dbc9',{bumpScale:.00035}),ceramic:surface('plaster','#545d50',{roughness:.72,clearcoat:.12,clearcoatRoughness:.6}),binding:surface('linen','#4c574b',{bumpScale:.001})};
+ return {wood:surface('wood','#d5c6b3'),dark:surface('wood','#8e8172'),edge:surface('wood','#615b50'),wall:surface('plaster','#e0dace'),fabric:surface('linen','#d0cbb8'),fabricDark:surface('linen','#828d78'),tatami:surface('tatami','#d2c6a8'),paper:surface('plaster','#d7dbc9',{bumpScale:.00035}),ceramic:surface('plaster','#545d50',{roughness:.72,clearcoat:.12,clearcoatRoughness:.6}),binding:surface('linen','#4c574b',{bumpScale:.001})};
 }
 
 // Metre-scaled box projection. Grain follows each part's long axis instead

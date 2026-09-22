@@ -67,30 +67,29 @@ export async function createRoom(scene,renderer){
  }
  box(.57,.14,1.6,-1.18,.24,-.08,dark,.02);
  for(let i=0;i<3;i++){
-  seat(.54,.115,.47,-1.16,.365,-.56+i*.5,i===1?fabricDark:fabric);
+  seat(.54,.115,.47,-1.16,.365,-.56+i*.5,fabric);
   const cushion=box(.12,.36,.47,-1.4,.49,-.56+i*.5,fabric,.045);cushion.rotation.z=-.1;
  }
  // Low table and its joinery.
- box(.98,.052,.7,.12,.379,.22,dark,.02);
- for(const x of [-.24,.48])for(const z of [-.02,.46])box(.055,.2,.055,x,.254,z,dark);
- box(.66,.027,.04,.12,.2,.42,dark);
+ box(.98,.052,.7,-.12,.379,.22,dark,.02);
+ for(const x of [-.48,.24])for(const z of [-.02,.46])box(.055,.17,.055,x,.269,z,dark);
+ box(.66,.027,.04,-.12,.2,.42,dark);
  // Side table for Andon.
- box(.4,.036,.42,-1.3,.532,1.04,dark,.012);
- for(const x of [-1.45,-1.15])for(const z of [.90,1.18])box(.036,.38,.036,x,.322,z,dark);
+ box(.34,.036,.34,-1.24,.532,.98,dark,.012);
+ for(const x of [-1.36,-1.12])for(const z of [.86,1.10])box(.036,.38,.036,x,.322,z,dark);
  // Credenza for SHIBUI, shallow enough to preserve the room's scale.
  box(1.42,.055,.38,.82,.6225,-1.25,dark,.012);
  box(1.36,.38,.34,.82,.405,-1.25,wood,.008);
  for(let i=0;i<27;i++)box(.012,.33,.012,.16+i*.05,.43,-1.071,dark);
  for(const x of [.23,1.4])box(.05,.16,.24,x,.19,-1.25,dark);
  // Foreground stool with compact Pebble.
- cylinder(.23,.24,.045,1.22,.4075,.95,dark);
- for(let i=0;i<3;i++){let a=i*Math.PI*2/3;box(.038,.27,.038,1.22+Math.cos(a)*.15,.25,.95+Math.sin(a)*.15,dark);}
- // One spare seat, pottery and tea objects. Restrained, not a furniture catalog.
- seat(.57,.105,.48,.4,.237,1.08,fabricDark,-.16);
- cylinder(.054,.043,.03,.39,.42,.07,black);
- cylinder(.043,.03,.043,.39,.45,.07,black);
- cylinder(.03,.023,.027,.35,.436,.34,black);
- cylinder(.03,.023,.027,.45,.436,.34,black);
+ cylinder(.23,.24,.045,.75,.4725,.95,dark);
+ for(let i=0;i<3;i++){let a=i*Math.PI*2/3;box(.038,.27,.038,.75+Math.cos(a)*.15,.315,.95+Math.sin(a)*.15,dark);}
+ // Tea objects stay on the table; keep the foreground free of spare seating.
+ cylinder(.054,.043,.03,.15,.42,.07,black);
+ cylinder(.043,.03,.043,.15,.45,.07,black);
+ cylinder(.03,.023,.027,.11,.436,.34,black);
+ cylinder(.03,.023,.027,.21,.436,.34,black);
  // A single sculptural vase in the rear niche with thin branches.
  const points=[new THREE.Vector2(0,0),new THREE.Vector2(.085,0),new THREE.Vector2(.11,.07),new THREE.Vector2(.095,.18),new THREE.Vector2(.035,.23),new THREE.Vector2(.031,.26)];
  const vase=new THREE.Mesh(new THREE.LatheGeometry(points,32),surfaces.ceramic);vase.position.set(-1.5,.13,-1.22);vase.castShadow=true;vase.receiveShadow=true;room.add(vase);
