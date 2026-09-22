@@ -1,28 +1,28 @@
 <!doctype html>
-<html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/><meta name="theme-color" content="#16191a"/><meta name="description" content="Department of Lost Affairs. Objetos de luz: explora los modelos, temperaturas y precios en nuestra sala."/><link rel="icon" href="data:,"/><title>Department of Lost Affairs · Objects</title></head><body>
-<main id="app" aria-label="Sala interactiva de lámparas">
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/><meta name="theme-color" content="#16191a"/><meta name="description" content="Department of Lost Affairs. Contemporary lighting and objects. Explore the collection in our interactive room."/><link rel="icon" href="data:,"/><title>Department of Lost Affairs · Objects</title></head><body>
+<main id="app" aria-label="Interactive lighting room">
 <div class="brand-signature" aria-label="Department of Lost Affairs"><span>DEPARTMENT OF</span><span>LOST AFFAIRS</span></div>
-<div id="scene" aria-label="Vista tridimensional de la sala"></div>
-<div id="targets" aria-label="Seleccionar una lámpara"></div>
-<div id="loading" role="status"><span class="loading-orb"></span><p>Preparando la sala</p></div>
-<div id="error" hidden role="alert"><p>No pudimos abrir la sala.</p><p class="error-detail">Prueba con un navegador que admita gráficos 3D.</p><button id="retry">Volver a intentar</button></div>
-<button id="back" hidden aria-label="Volver a la sala">←</button>
+<div id="scene" aria-label="Three-dimensional room view"></div>
+<div id="targets" aria-label="Select a lamp"></div>
+<div id="loading" role="status"><span class="loading-orb"></span><p>Preparing the room</p></div>
+<div id="error" hidden role="alert"><p>We could not open the room.</p><p class="error-detail">Try a browser that supports 3D graphics.</p><button id="retry">Try again</button></div>
+<button id="back" hidden aria-label="Back to the room">←</button>
 <p id="hint" hidden></p>
 <section id="controls" hidden aria-labelledby="lamp-name">
-<div class="panel-heading"><button id="previous" aria-label="Lámpara anterior">‹</button><div><p id="lamp-kind" hidden></p><h1 id="lamp-name"></h1><p id="lamp-tagline"></p><p id="lamp-price" hidden></p></div><button id="next" aria-label="Lámpara siguiente">›</button></div><div class="light-controls"><button id="power" role="switch" aria-checked="true" aria-label="Encender lámpara"><span class="switch-track"><span></span></span><span id="power-label" hidden>Encendida</span></button>
-<div class="temperatures" role="group" aria-label="Temperatura de luz"><button data-temp="warm" aria-pressed="true"><i class="warm"></i>Cálida</button><button data-temp="neutral" aria-pressed="false"><i class="neutral"></i>Neutra</button><button data-temp="cool" aria-pressed="false"><i class="cool"></i>Fría</button></div></div>
-<button id="story-open" aria-expanded="false" aria-controls="piece-story">La pieza <span aria-hidden="true">↗</span></button>
+<div class="panel-heading"><button id="previous" aria-label="Previous lamp">‹</button><div><p id="lamp-kind" hidden></p><h1 id="lamp-name"></h1><p id="lamp-tagline"></p><p id="lamp-price" hidden></p></div><button id="next" aria-label="Next lamp">›</button></div><div class="light-controls"><button id="power" role="switch" aria-checked="true" aria-label="Turn on lamp"><span class="switch-track"><span></span></span><span id="power-label" hidden>On</span></button>
+<div class="temperatures" role="group" aria-label="Light temperature"><button data-temp="warm" aria-pressed="true"><i class="warm"></i>Warm</button><button data-temp="neutral" aria-pressed="false"><i class="neutral"></i>Neutral</button><button data-temp="cool" aria-pressed="false"><i class="cool"></i>Cool</button></div></div>
+<button id="story-open" aria-expanded="false" aria-controls="piece-story">The object <span aria-hidden="true">↗</span></button>
 <p id="save-status" class="sr-only" role="status"></p>
 </section>
-<aside id="piece-story" hidden aria-labelledby="story-title"><button id="story-close" aria-label="Cerrar historia de la pieza">×</button><p id="story-name"></p><h2 id="story-title"></h2><p id="story-text"></p></aside>
-<button id="enter" hidden aria-label="Entrar a la sala e iniciar la secuencia de luz">Entrar <span aria-hidden="true">↗</span></button>
-<button id="sound" aria-pressed="true" aria-label="Silenciar sonidos"></button>
+<aside id="piece-story" hidden aria-labelledby="story-title"><button id="story-close" aria-label="Close object story">×</button><p id="story-name"></p><h2 id="story-title"></h2><p id="story-text"></p></aside>
+<button id="enter" hidden aria-label="Enter the room and start the lighting sequence">Enter <span aria-hidden="true">↗</span></button>
+<button id="sound" aria-pressed="true" aria-label="Mute sound"></button>
 <nav class="brand-nav" aria-label="Department of Lost Affairs">
-<button data-dialog="about-dialog">Nosotros</button>
-<button data-dialog="contact-dialog">Contacto</button>
-<a href="https://www.instagram.com/departmentoflostaffairs/" target="_blank" rel="noopener noreferrer" aria-label="Instagram de Department of Lost Affairs (abre en otra pestaña)" class="instagram-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.4" cy="6.8" r=".8" fill="currentColor" stroke="none"/></svg></a>
+<button data-dialog="about-dialog">About</button>
+<button data-dialog="contact-dialog">Contact</button>
+<a href="https://www.instagram.com/departmentoflostaffairs/" target="_blank" rel="noopener noreferrer" aria-label="Department of Lost Affairs on Instagram (opens in a new tab)" class="instagram-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.4" cy="6.8" r=".8" fill="currentColor" stroke="none"/></svg></a>
 </nav>
-<dialog id="about-dialog" class="brand-dialog" aria-labelledby="about-title"><button class="dialog-close" aria-label="Cerrar nosotros">×</button><p class="dialog-eyebrow">DLA / Nosotros</p><h2 id="about-title">Department of<br>Lost Affairs</h2><p>Objetos, investigación y traducción cultural.</p><p>Exploramos la relación entre los objetos y los espacios que habitamos. Esta colección reúne lámparas para crear distintas formas de estar: acompañar, iluminar y dar calma.</p><p class="dialog-signoff">FOR WHAT REMAINS</p></dialog>
-<dialog id="contact-dialog" class="brand-dialog" aria-labelledby="contact-title"><button class="dialog-close" aria-label="Cerrar contacto">×</button><p class="dialog-eyebrow">DLA / Contacto</p><h2 id="contact-title">Conversemos.</h2><div id="contact-links"><p>Escríbenos por correo o por Instagram.</p><a href="mailto:gm@frensonly.club">gm@frensonly.club ↗</a><a href="https://www.instagram.com/departmentoflostaffairs/" target="_blank" rel="noopener noreferrer">@departmentoflostaffairs ↗</a></div></dialog>
+<dialog id="about-dialog" class="brand-dialog" aria-labelledby="about-title"><button class="dialog-close" aria-label="Close about">×</button><p class="dialog-eyebrow">DLA / About</p><h2 id="about-title">Department of<br>Lost Affairs</h2><p>Department of Lost Affairs is an office dedicated to investigating ideas, cultures, techniques, forms and stories that deserve to become objects.</p><p>Our background is in worldbuilding, digital twins and 3D design. We learned to read worlds as systems: to understand their codes, relationships, materials and rituals. Today, we use that same logic to create contemporary lighting and objects.</p><p>We do not copy references. We study them, translate them and give them a new form.</p><p class="dialog-signoff">We investigate things. Occasionally, they become objects.</p></dialog>
+<dialog id="contact-dialog" class="brand-dialog" aria-labelledby="contact-title"><button class="dialog-close" aria-label="Close contact">×</button><p class="dialog-eyebrow">DLA / Contact</p><h2 id="contact-title">Let’s talk.</h2><div id="contact-links"><p>Write to us by email or on Instagram.</p><a href="mailto:gm@frensonly.club">gm@frensonly.club ↗</a><a href="https://www.instagram.com/departmentoflostaffairs/" target="_blank" rel="noopener noreferrer">@departmentoflostaffairs ↗</a></div></dialog>
 <div id="announcement" class="sr-only" aria-live="polite"></div>
 </main><script type="module" src="/src/main.js"></script></body></html>

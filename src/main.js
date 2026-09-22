@@ -43,7 +43,7 @@ function startIntro(){
  introTimers.push(setTimeout(finishIntro,4800));
 }
 $('enter').onclick=startIntro;
-function updateSound(){ $('sound').setAttribute('aria-pressed',String(sound.enabled)); $('sound').setAttribute('aria-label',sound.enabled?'Silenciar sonidos':'Activar sonidos'); $('sound').innerHTML=sound.enabled?speakerOn:speakerOff; $('sound').querySelector('svg').setAttribute('aria-hidden','true'); }
+function updateSound(){ $('sound').setAttribute('aria-pressed',String(sound.enabled)); $('sound').setAttribute('aria-label',sound.enabled?'Mute sound':'Enable sound'); $('sound').innerHTML=sound.enabled?speakerOn:speakerOff; $('sound').querySelector('svg').setAttribute('aria-hidden','true'); }
 updateSound();
 $('sound').onclick=()=>{sound.toggle();updateSound();if(sound.enabled)sound.play(selected,'select');};
 const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)');
@@ -97,7 +97,7 @@ function selectLamp(id){
  sound.play(id,'select');
  $('controls').hidden=false;$('back').hidden=false;$('hint').hidden=true;$('targets').hidden=false;
  updatePanel();focus(id);if(!controlHadFocus)$('back').focus({preventScroll:true});
- announce(`${models.find(m=>m.id===id).name}. Controles de luz abiertos.`);
+ announce(`${models.find(m=>m.id===id).name}. Light controls open.`);
 }
 function back(){
  closeStory(false);
@@ -117,15 +117,15 @@ function updatePanel(){
  $('lamp-name').textContent=item.name;$('lamp-kind').textContent=item.kind;
  $('lamp-price').hidden=!Number.isFinite(item.priceUSD);
  $('lamp-price').textContent=Number.isFinite(item.priceUSD)?`US$ ${item.priceUSD}`:'';
- $('power').setAttribute('aria-checked',String(s.on));$('power').setAttribute('aria-label',`${s.on?'Apagar':'Encender'} ${item.name}`);
- $('power-label').textContent=s.on?'Encendida':'Apagada';
+ $('power').setAttribute('aria-checked',String(s.on));$('power').setAttribute('aria-label',`${s.on?'Turn off':'Turn on'} ${item.name}`);
+ $('power-label').textContent=s.on?'On':'Off';
  for(const b of temperatureButtons)b.setAttribute('aria-pressed',String(b.dataset.temp===s.temperature));
 }
 function applyLights(animate=true){
  const changes=models.map(item=>{
   const s=state[item.id],color=new THREE.Color(TEMPERATURES[s.temperature].color);
   const on=introPhase==='done'?s.on:introLit.has(item.id);
-  item.button.setAttribute('aria-label',`${item.name}, ${on?'encendida':'apagada'}, luz ${TEMPERATURES[s.temperature].label.toLowerCase()}`);
+  item.button.setAttribute('aria-label',`${item.name}, ${on?'on':'off'}, ${TEMPERATURES[s.temperature].label.toLowerCase()} light`);
   return {item,color,on,fromColor:item.light.color.clone(),fromPower:item.light.intensity,
    shades:item.diffusers.map(m=>({m,color:m.color.clone(),emissive:m.emissive.clone(),power:m.emissiveIntensity}))};
  });
@@ -154,7 +154,7 @@ function updateLighting(t){
 function commit(){
  applyLights();updatePanel();
  const saved=saveState(storage,state);
- $('save-status').textContent=saved?'Guardado.':'Tu navegador no permite guardar los cambios.';
+ $('save-status').textContent=saved?'Saved.':'Your browser cannot save these changes.';
 }
 $('back').onclick=back;
 function moveLamp(step){const i=LAMPS.findIndex(m=>m.id===selected);selectLamp(LAMPS[(i+step+LAMPS.length)%LAMPS.length].id);}
@@ -198,7 +198,7 @@ async function init(){
  renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.02;
  $('scene').append(renderer.domElement);renderer.domElement.setAttribute('aria-hidden','true');
- renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();showError(new Error('Se perdió el contexto 3D.'));});
+ renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();showError(new Error('The 3D context was lost.'));});
  camera=new THREE.OrthographicCamera(-1,1,1,-1,.02,40);camera.layers.enable(1);
  const target=new THREE.WebGLRenderTarget(innerWidth,innerHeight,{type:THREE.HalfFloatType,samples:4});
  composer=new EffectComposer(renderer,target);composer.addPass(new RenderPass(scene,camera));
