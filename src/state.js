@@ -1,13 +1,13 @@
 export const STORAGE_KEY = 'lamparas.sala.v1';
 export const TEMPERATURES = {warm:{label:'Cálida',color:0xffbc73},neutral:{label:'Neutra',color:0xfff0d7},cool:{label:'Fría',color:0xcbdfff}};
 export const LAMPS = [
- {id:'andon',name:'Andon Frame',kind:'Lámpara de mesa',position:[-1.24,.55,.98],height:.24,power:1.0},
+ {id:'andon',name:'Andon Frame',kind:'Lámpara de mesa',position:[-1.18,.55,.98],height:.24,power:1.0},
  {id:'toro',name:'Tōrō Stack',kind:'Lámpara de pie',position:[-.98,.13,-1.19],height:1.18,power:2.1},
  {id:'shoji',name:'Shoji Wall',kind:'Aplique de pared',position:[-.46,1.16,-1.51],height:.24,power:.65},
- {id:'pebble',name:'Karesansui Pebble',kind:'Jardín de luz',position:[-.12,.405,.22],height:.093,power:.6},
- {id:'pebble-compact',name:'Pebble Compacta',kind:'Luz de acento',position:[.75,.495,.95],height:.08,power:.5},
- {id:'shibui',name:'SHIBUI',kind:'Lámpara individual',position:[.48,.65,-1.26],height:.133,power:.9},
- {id:'shibui-stack',name:'SHIBUI Apilada',kind:'Dos pantallas',position:[1.14,.65,-1.26],height:.265,power:1.2}
+ {id:'pebble',name:'Karesansui Pebble',kind:'Jardín de luz',position:[-.08,.405,-.08],height:.093,power:.6},
+ {id:'pebble-compact',name:'Pebble Compacta',kind:'Luz de acento',position:[.82,.495,.98],height:.08,power:.5},
+ {id:'shibui',name:'SHIBUI',kind:'Lámpara individual',position:[.47,.65,-1.25],height:.133,power:.9},
+ {id:'shibui-stack',name:'SHIBUI Apilada',kind:'Dos pantallas',position:[1.17,.65,-1.25],height:.265,power:1.2}
 ];
 export function normalizeState(raw){
  const source=raw&&typeof raw==='object'?raw:{};
