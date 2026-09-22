@@ -17,7 +17,7 @@ npm run build
 npm run preview
 ```
 
-`dist/` es la salida estática publicable. GitHub Actions publica automáticamente `main` en https://tataportal.github.io/web-lamparas/ después de ejecutar las pruebas y compilar.
+`dist/` es la salida estática publicable. GitHub Actions publica automáticamente `main` en https://tataportal.github.io/departmentoflostaffairs/ después de ejecutar las pruebas y compilar.
 
 ## Interacción
 
