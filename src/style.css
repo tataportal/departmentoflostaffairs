@@ -53,3 +53,14 @@
 @media(max-width:700px){#piece-story{left:24px;right:24px;padding:25px 0 18px}#controls .temperatures button{padding-left:10px;padding-right:10px}#controls .temperatures button[aria-pressed=true]:after{left:10px;right:10px}}
 
 .art-credits{margin-top:22px;font:9px "SFMono-Regular",Consolas,monospace;color:#66665b}.art-credits summary{cursor:pointer;letter-spacing:.08em}.brand-dialog .art-credits p{font-size:10px;line-height:1.7}
+
+/* An editorial entrance, using only the room, wordmark and fine rules. */
+.brand-signature{transition:font-size .6s ease,top .6s ease,left .6s ease,letter-spacing .6s ease;z-index:6}
+.awaiting-entry .brand-signature{top:52px;left:52px;font-size:clamp(16px,1.75vw,28px);letter-spacing:.22em;line-height:1.55;gap:0;font-weight:300;text-shadow:none}
+.awaiting-entry .brand-signature:after{content:"";display:block;width:46px;height:1px;background:#eee9dc70;margin-top:23px}
+#enter{bottom:54px;width:260px;display:flex;justify-content:space-between;align-items:center;padding:17px 0;background:none;border:0;border-top:1px solid #eee9dc70;border-bottom:1px solid #eee9dc35;border-radius:0;font-size:10px;letter-spacing:.16em;transition:border-color .25s,color .25s}
+#enter:hover{background:none;border-color:#eee9dc;color:#fff}#enter span{font-size:18px;font-weight:300;transition:transform .25s}#enter:hover span{transform:translate(3px,-3px)}
+.awaiting-entry .brand-nav{left:52px;bottom:38px}.awaiting-entry #sound{right:42px;bottom:30px;background:none;border:0;backdrop-filter:none}
+#loading{background:#101311;gap:20px}#loading p{font:9px "SFMono-Regular",Consolas,monospace;letter-spacing:.16em;text-transform:uppercase;color:#b6b7a9}.loading-orb{width:100px;height:1px;border-radius:0;box-shadow:none;background:#e4dfce;animation:breathe 1.6s ease-in-out infinite}
+@media(max-width:700px){.awaiting-entry .brand-signature{top:32px;left:26px;font-size:18px;letter-spacing:.17em}.awaiting-entry .brand-signature:after{margin-top:15px;width:30px}#enter{bottom:88px;width:calc(100% - 52px);max-width:300px}.awaiting-entry .brand-nav{left:26px;bottom:28px}.awaiting-entry #sound{right:18px;bottom:19px}}
+@media(max-height:550px) and (min-width:701px){.awaiting-entry .brand-signature{top:24px;left:28px;font-size:16px}#enter{bottom:32px;width:220px}.awaiting-entry .brand-nav{left:28px;bottom:24px}}

@@ -30,12 +30,12 @@ let introPhase='waiting',introLit=new Set(),introTimers=[];
 const introOrder=SIGNATURE_ORDER;
 function finishIntro(){
  introTimers.forEach(clearTimeout);introTimers=[];introPhase='done';
- $('enter').hidden=true;document.body.classList.remove('introducing');
+ $('enter').hidden=true;document.body.classList.remove('introducing','awaiting-entry');
  sound.stopSignature();applyLights();
 }
 function startIntro(){
  if(introPhase!=='waiting')return;
- introPhase='playing';$('enter').hidden=true;
+ introPhase='playing';$('enter').hidden=true;document.body.classList.remove('awaiting-entry');
  sound.unlock();
  introOrder.forEach((id,i)=>introTimers.push(setTimeout(()=>{
   introLit.add(id);sound.signatureNote(i);applyLights();
