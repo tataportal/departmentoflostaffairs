@@ -36,13 +36,36 @@ export async function createSurfaceLibrary(anisotropy=8){
   for(const t of [color,bump,rough]){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=anisotropy;t.minFilter=THREE.LinearMipmapLinearFilter;}
   maps[kind]={color,bump,rough};
  }
- function surface(kind,color,options={}){
-  const m=maps[kind];
-  const specs={wood:{roughness:.82,bumpScale:.00028,clearcoat:.12,clearcoatRoughness:.62},linen:{roughness:1,bumpScale:.00065,sheen:1,sheenColor:new THREE.Color('#d4cfba'),sheenRoughness:.88},tatami:{roughness:1,bumpScale:.0008},plaster:{roughness:1,bumpScale:.00025}};
-  const material=new THREE.MeshPhysicalMaterial({color,map:m.color,bumpMap:m.bump,roughnessMap:m.rough,...specs[kind],...options});
+ // Keep the softer paper/ceramic finish separate from the wall's clay relief.
+ maps.paper=maps.plaster;
+ const loader=new THREE.TextureLoader();
+ await Promise.all([['wood','wood_table_001'],['linen','rough_linen'],['plaster','clay_plaster']].map(async([kind,asset])=>{
+  const [color,normal,rough]=await Promise.all(['Diffuse','nor_gl','Rough'].map(channel=>loader.loadAsync(`${import.meta.env.BASE_URL}textures/pbr/${asset}_${channel}.jpg`)));
+  color.colorSpace=THREE.SRGBColorSpace;
+  for(const texture of [color,normal,rough]){
+   texture.wrapS=texture.wrapT=THREE.RepeatWrapping;texture.anisotropy=anisotropy;
+  }
+  maps[kind]={color,normal,rough};
+ }));
+ function surface(kind,color,options={},mapKind=kind){
+  const m=maps[mapKind];
+  const specs={wood:{roughness:.83,normalScale:new THREE.Vector2(.38,.38),clearcoat:.08,clearcoatRoughness:.65},linen:{roughness:1,normalScale:new THREE.Vector2(.65,.65),sheen:.55,sheenColor:new THREE.Color('#d4cfba'),sheenRoughness:.88},tatami:{roughness:1,bumpScale:.0008},plaster:{roughness:1,normalScale:new THREE.Vector2(.22,.22),bumpScale:.00025}};
+  const material=new THREE.MeshPhysicalMaterial({color,map:m.color,normalMap:m.normal||null,bumpMap:m.bump||null,roughnessMap:m.rough,...specs[kind],...options});
+  if(mapKind!=='paper'&&['wood','linen','plaster'].includes(kind)){
+   const correction=kind==='linen'
+    ? 'sampledDiffuseColor.rgb = vec3(dot(sampledDiffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722))) * 1.6;'
+    :kind==='wood'
+    ? 'sampledDiffuseColor.rgb = mix(sampledDiffuseColor.rgb, vec3(dot(sampledDiffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722))), 0.38) * 2.3;'
+    : 'sampledDiffuseColor.rgb = mix(sampledDiffuseColor.rgb, vec3(dot(sampledDiffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722))), 0.85) * 2.8;';
+   material.onBeforeCompile=shader=>{
+    shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',THREE.ShaderChunk.map_fragment.replace('diffuseColor *= sampledDiffuseColor;', correction+' diffuseColor *= sampledDiffuseColor;'));
+    if(kind==='wood')shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor = max(0.66, roughnessFactor);');
+   };
+   material.customProgramCacheKey=()=>kind+'-room-pbr-v2';
+  }
   material.userData.surface=kind;return material;
  }
- return {wood:surface('wood','#dbc6aa'),dark:surface('wood','#a18b73'),edge:surface('wood','#615b50'),wall:surface('plaster','#e7d8bf'),fabric:surface('linen','#e0d3bc'),fabricDark:surface('linen','#828d78'),tatami:surface('tatami','#d2c6a8'),paper:surface('plaster','#d7dbc9',{bumpScale:.00035}),ceramic:surface('plaster','#545d50',{roughness:.72,clearcoat:.12,clearcoatRoughness:.6}),binding:surface('linen','#4c574b',{bumpScale:.001})};
+ return {wood:surface('wood','#ffffff'),dark:surface('wood','#d5c8b8'),edge:surface('wood','#766b5e'),wall:surface('plaster','#f3e9d8'),fabric:surface('linen','#eee4d3'),fabricDark:surface('linen','#828d78'),tatami:surface('tatami','#d2c6a8'),paper:surface('plaster','#d7dbc9',{bumpScale:.00035},'paper'),ceramic:surface('plaster','#545d50',{roughness:.72,clearcoat:.12,clearcoatRoughness:.6},'paper'),binding:surface('linen','#4c574b',{bumpScale:.001})};
 }
 
 // Metre-scaled box projection. Grain follows each part's long axis instead
@@ -50,13 +73,14 @@ export async function createSurfaceLibrary(anisotropy=8){
 export function surfaceUV(geometry,material,dimensions,offset=[0,0,0]){
  const kind=material.userData.surface;if(!kind)return;
  const pos=geometry.attributes.position,norm=geometry.attributes.normal,uv=geometry.attributes.uv;
- const tile=kind==='wood'?[.38,1.4]:kind==='linen'?[.32,.32]:kind==='tatami'?[.38,.38]:[.65,.65];
+ const tile=kind==='wood'?[.65,1.8]:kind==='linen'?[.45,.45]:kind==='tatami'?[.48,.48]:[1.7,1.7];
  for(let i=0;i<pos.count;i++){
   const n=[Math.abs(norm.getX(i)),Math.abs(norm.getY(i)),Math.abs(norm.getZ(i))];
   const normalAxis=!geometry.index&&geometry.groups.length===6?Math.floor(i/(pos.count/6)/2):n.indexOf(Math.max(...n));let axes=[0,1,2].filter(a=>a!==normalAxis);
   if(kind==='wood'&&dimensions[axes[0]]>dimensions[axes[1]])axes.reverse();
+  const variation=kind==='wood'?Math.sin(offset[0]*127.1+offset[1]*311.7+offset[2]*74.7)*.37:0;
   const xyz=[pos.getX(i),pos.getY(i),pos.getZ(i)];
-  uv.setXY(i,(xyz[axes[0]]+offset[axes[0]])/tile[0],(xyz[axes[1]]+offset[axes[1]])/tile[1]);
+  uv.setXY(i,(xyz[axes[0]]+offset[axes[0]])/tile[0]+variation,(xyz[axes[1]]+offset[axes[1]])/tile[1]+variation*.61);
  }
  uv.needsUpdate=true;
 }
