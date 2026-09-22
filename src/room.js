@@ -10,8 +10,10 @@ export async function createRoom(scene,renderer){
  const black=surfaces.ceramic;
  const room=new THREE.Group();scene.add(room);
  function box(w,h,d,x,y,z,m=wood,r=0){
-  const radius=r||(m.userData.surface==='wood'?Math.min(.004,Math.min(w,h,d)*.15):0);
-  const geometry=radius?new RoundedBoxGeometry(w,h,d,3,radius):new THREE.BoxGeometry(w,h,d);
+  // Millimetre-scale edge breaks catch light without changing the footprint.
+  const edgeRadius={wood:.006,plaster:.0015,tatami:.002,linen:.001}[m.userData.surface]||0;
+  const radius=Math.min(r||edgeRadius,Math.min(w,h,d)*(r?.49:.24));
+  const geometry=radius?new RoundedBoxGeometry(w,h,d,radius>.005?5:3,radius):new THREE.BoxGeometry(w,h,d);
   surfaceUV(geometry,m,[w,h,d],[x,y,z]);
   const mesh=new THREE.Mesh(geometry,m);mesh.position.set(x,y,z);mesh.castShadow=true;mesh.receiveShadow=true;room.add(mesh);return mesh;
  }
@@ -34,7 +36,23 @@ export async function createRoom(scene,renderer){
   const seam=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points,true),96,.0022,5,true),binding);
   seam.position.set(x,y,z);seam.rotation.y=rotation;room.add(seam);return pillow;
  }
- function cylinder(top,bottom,h,x,y,z,m=black){const mesh=new THREE.Mesh(new THREE.CylinderGeometry(top,bottom,h,36),m);mesh.position.set(x,y,z);mesh.castShadow=true;mesh.receiveShadow=true;room.add(mesh);return mesh;}
+ function cylinder(top,bottom,h,x,y,z,m=black){
+  // Revolved quarter-round rims instead of razor-sharp cylinder caps.
+  const r=Math.min(m===black?.0018:.004,h*.18,top*.12,bottom*.12);
+  const profile=[new THREE.Vector2(0,-h/2)];
+  for(let i=0;i<=6;i++){
+   const a=-Math.PI/2+i*Math.PI/12;
+   profile.push(new THREE.Vector2(bottom-r+r*Math.cos(a),-h/2+r+r*Math.sin(a)));
+  }
+  for(let i=0;i<=6;i++){
+   const a=i*Math.PI/12;
+   profile.push(new THREE.Vector2(top-r+r*Math.cos(a),h/2-r+r*Math.sin(a)));
+  }
+  profile.push(new THREE.Vector2(0,h/2));
+  const geometry=new THREE.LatheGeometry(profile,96);
+  const mesh=new THREE.Mesh(geometry,m);mesh.position.set(x,y,z);mesh.castShadow=true;mesh.receiveShadow=true;room.add(mesh);return mesh;
+ }
+
  // Floating, open-front architectural model. Dimensions are metres.
  box(3.65,.2,3.45,0,-.025,0,edge,.025);
  for(let i=0;i<24;i++)box(.147,.06,3.35,-1.725+i*.15,.1,0,i%4===0?dark:wood);
@@ -71,14 +89,14 @@ export async function createRoom(scene,renderer){
   const cushion=box(.12,.36,.47,-1.4,.49,-.58+i*.5,fabric,.045);cushion.rotation.z=-.1;
  }
  // Low table and its joinery.
- box(.98,.052,.7,-.08,.379,-.08,dark,.02);
+ box(.98,.052,.7,-.08,.379,-.08,dark,.008);
  for(const x of [-.44,.28])for(const z of [-.32,.16])box(.055,.17,.055,x,.269,z,dark);
  box(.66,.027,.04,-.08,.2,.12,dark);
  // Side table for Andon.
- box(.34,.036,.34,-1.18,.532,.98,dark,.012);
+ box(.34,.036,.34,-1.18,.532,.98,dark,.005);
  for(const x of [-1.30,-1.06])for(const z of [.86,1.10])box(.036,.38,.036,x,.322,z,dark);
  // Credenza for SHIBUI, shallow enough to preserve the room's scale.
- box(1.42,.055,.38,.82,.6225,-1.25,dark,.012);
+ box(1.42,.055,.38,.82,.6225,-1.25,dark,.007);
  box(1.36,.38,.34,.82,.405,-1.25,wood,.008);
  for(let i=0;i<27;i++)box(.012,.33,.012,.16+i*.05,.43,-1.071,dark);
  for(const x of [.23,1.4])box(.05,.16,.24,x,.19,-1.25,dark);
