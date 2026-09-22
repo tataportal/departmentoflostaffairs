@@ -58,7 +58,7 @@ updateSound();
 $('sound').onclick=()=>{sound.toggle();updateSound();if(sound.enabled)sound.play(selected,'select');};
 const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)');
 let selected=null,models=[],animation=null,lighting=null,frame=0,dirty=true;
-let camera,renderer,composer,scene,dust,room,entryCamera,scenePass,contactPass,cameraTravel=null;
+let camera,renderer,composer,scene,dust,room,hemisphere,moon,entryCamera,scenePass,contactPass,cameraTravel=null;
 let dustTime=0,lastRender=0;
 let orbitYaw=0,orbitPitch=.12,drag=null;
 function orbitProduct(){
@@ -144,12 +144,27 @@ function applyLights(animate=true){
   return {item,color,on,fromColor:item.light.color.clone(),fromPower:item.light.intensity,
    shades:item.diffusers.map(m=>({m,color:m.color.clone(),emissive:m.emissive.clone(),power:m.emissiveIntensity}))};
  });
- lighting={start:performance.now(),changes};
+ const allOff=changes.every(change=>!change.on);
+ lighting={start:performance.now(),changes,ambient:{
+  sky:hemisphere.color.clone(),ground:hemisphere.groundColor.clone(),key:moon.color.clone(),
+  skyPower:hemisphere.intensity,keyPower:moon.intensity,environment:scene.environmentIntensity,
+  targetSky:new THREE.Color(allOff?'#8baee8':'#ffead4'),
+  targetGround:new THREE.Color(allOff?'#233651':'#59422c'),
+  targetKey:new THREE.Color(allOff?'#92baff':'#ffdfb5'),
+  targetSkyPower:allOff?.28:.38,targetKeyPower:allOff?.32:.48,targetEnvironment:allOff?.065:.2
+ }};
  if(!animate||reduceMotion.matches)updateLighting(1);
  dirty=true;requestFrame();
 }
 function updateLighting(t){
- const e=t*t*(3-2*t);
+ const lampT=Math.min(1,t*700/240),e=lampT*lampT*(3-2*lampT);
+ const a=lighting.ambient,blend=t*t*(3-2*t);
+ hemisphere.color.lerpColors(a.sky,a.targetSky,blend);
+ hemisphere.groundColor.lerpColors(a.ground,a.targetGround,blend);
+ moon.color.lerpColors(a.key,a.targetKey,blend);
+ hemisphere.intensity=THREE.MathUtils.lerp(a.skyPower,a.targetSkyPower,blend);
+ moon.intensity=THREE.MathUtils.lerp(a.keyPower,a.targetKeyPower,blend);
+ scene.environmentIntensity=THREE.MathUtils.lerp(a.environment,a.targetEnvironment,blend);
  for(const {item,color,on,fromColor,fromPower,shades} of lighting.changes){
   item.light.color.lerpColors(fromColor,color,e);
   item.light.intensity=THREE.MathUtils.lerp(fromPower,on?item.power*(item.id.startsWith('pebble')?.06:item.id.startsWith('shibui')?.065:item.id==='shoji'?.018:.06):0,e);
@@ -218,7 +233,7 @@ function render(time){
   camera.lookAt(aim);camera.updateProjectionMatrix();dirty=true;
   if(t===1)animation=null;
  }
- if(lighting)updateLighting(Math.min(1,(time-lighting.start)/240));
+ if(lighting)updateLighting(Math.min(1,(time-lighting.start)/700));
  const drifting=selected&&!reduceMotion.matches&&models.some(m=>m.light.intensity>.001);
  if(drifting){dustTime+=Math.min(lastRender?(time-lastRender)/1000:0,.05);dirty=true;}
  lastRender=time;
@@ -245,8 +260,8 @@ async function init(){
  composer.addPass(new OutputPass());composer.addPass(new SMAAPass());
  const vignette=new ShaderPass(VignetteShader);vignette.uniforms.offset.value=.72;vignette.uniforms.darkness.value=1;composer.addPass(vignette);
  RectAreaLightUniformsLib.init();
- scene.add(new THREE.HemisphereLight(0xffead4,0x59422c,.38));
- const moon=new THREE.DirectionalLight(0xffdfb5,.48);moon.position.set(2,5,1);moon.castShadow=true;moon.shadow.mapSize.set(2048,2048);Object.assign(moon.shadow.camera,{left:-3,right:3,top:3,bottom:-3,near:.1,far:15});moon.shadow.normalBias=.02;moon.shadow.bias=-.0002;scene.add(moon);
+ hemisphere=new THREE.HemisphereLight(0xffead4,0x59422c,.38);scene.add(hemisphere);
+ moon=new THREE.DirectionalLight(0xffdfb5,.48);moon.position.set(2,5,1);moon.castShadow=true;moon.shadow.mapSize.set(2048,2048);Object.assign(moon.shadow.camera,{left:-3,right:3,top:3,bottom:-3,near:.1,far:15});moon.shadow.normalBias=.02;moon.shadow.bias=-.0002;scene.add(moon);
  room=await createRoom(scene,renderer);
  // Prefiltered broad reflections give matte surfaces a readable shape.
  const studio=new RoomEnvironment(),pmrem=new THREE.PMREMGenerator(renderer);
