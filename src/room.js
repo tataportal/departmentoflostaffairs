@@ -70,15 +70,13 @@ export async function createRoom(scene,renderer){
   seat(.54,.115,.47,-1.16,.365,-.56+i*.5,i===1?fabricDark:fabric);
   const cushion=box(.12,.36,.47,-1.4,.49,-.56+i*.5,fabric,.045);cushion.rotation.z=-.1;
  }
- box(1.28,.13,.52,-.18,.24,-.95,dark,.02);
- for(let i=0;i<2;i++)seat(.57,.115,.49,-.49+i*.6,.36,-.93,fabricDark);
  // Low table and its joinery.
  box(.98,.052,.7,.12,.379,.22,dark,.02);
  for(const x of [-.24,.48])for(const z of [-.02,.46])box(.055,.2,.055,x,.254,z,dark);
  box(.66,.027,.04,.12,.2,.42,dark);
  // Side table for Andon.
- box(.4,.036,.42,-1.3,.532,.8,dark,.012);
- for(const x of [-1.45,-1.15])for(const z of [.66,.94])box(.036,.38,.036,x,.322,z,dark);
+ box(.4,.036,.42,-1.3,.532,1.04,dark,.012);
+ for(const x of [-1.45,-1.15])for(const z of [.90,1.18])box(.036,.38,.036,x,.322,z,dark);
  // Credenza for SHIBUI, shallow enough to preserve the room's scale.
  box(1.42,.055,.38,.82,.6225,-1.25,dark,.012);
  box(1.36,.38,.34,.82,.405,-1.25,wood,.008);
@@ -88,7 +86,7 @@ export async function createRoom(scene,renderer){
  cylinder(.23,.24,.045,1.22,.4075,.95,dark);
  for(let i=0;i<3;i++){let a=i*Math.PI*2/3;box(.038,.27,.038,1.22+Math.cos(a)*.15,.25,.95+Math.sin(a)*.15,dark);}
  // One spare seat, pottery and tea objects. Restrained, not a furniture catalog.
- seat(.57,.105,.48,.6,.237,1.08,fabricDark,-.16);
+ seat(.57,.105,.48,.4,.237,1.08,fabricDark,-.16);
  cylinder(.054,.043,.03,.39,.42,.07,black);
  cylinder(.043,.03,.043,.39,.45,.07,black);
  cylinder(.03,.023,.027,.35,.436,.34,black);
