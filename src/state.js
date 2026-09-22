@@ -2,7 +2,7 @@ export const STORAGE_KEY = 'lamparas.sala.v1';
 export const TEMPERATURES = {warm:{label:'Cálida',color:0xffbc73},neutral:{label:'Neutra',color:0xfff0d7},cool:{label:'Fría',color:0xcbdfff}};
 export const LAMPS = [
  {id:'andon',name:'Andon Frame',kind:'Lámpara de mesa',position:[-1.3,.55,.8],height:.24,power:1.0},
- {id:'toro',name:'Tōrō Stack',kind:'Lámpara de pie',position:[-.8,.13,1.3],height:1.18,power:2.1},
+ {id:'toro',name:'Tōrō Stack',kind:'Lámpara de pie',position:[-1.02,.13,-1.28],height:1.18,power:2.1},
  {id:'shoji',name:'Shoji Wall',kind:'Aplique de pared',position:[-.46,1.16,-1.51],height:.24,power:.65},
  {id:'pebble',name:'Karesansui Pebble',kind:'Jardín de luz',position:[.12,.405,.22],height:.093,power:.6},
  {id:'pebble-compact',name:'Pebble Compacta',kind:'Luz de acento',position:[1.22,.43,.95],height:.08,power:.5},
