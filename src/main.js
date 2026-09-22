@@ -119,13 +119,13 @@ function updatePanel(){
  $('lamp-price').textContent=Number.isFinite(item.priceUSD)?`US$ ${item.priceUSD}`:'';
  $('power').setAttribute('aria-checked',String(s.on));$('power').setAttribute('aria-label',`${s.on?'Turn off':'Turn on'} ${item.name}`);
  $('power-label').textContent=s.on?'On':'Off';
- for(const b of temperatureButtons)b.setAttribute('aria-pressed',String(b.dataset.temp===s.temperature));
+ for(const b of temperatureButtons)b.setAttribute('aria-pressed',String(s.on&&b.dataset.temp===s.temperature));
 }
 function applyLights(animate=true){
  const changes=models.map(item=>{
   const s=state[item.id],color=new THREE.Color(TEMPERATURES[s.temperature].color);
   const on=introPhase==='done'?s.on:introLit.has(item.id);
-  item.button.setAttribute('aria-label',`${item.name}, ${on?'on':'off'}, ${TEMPERATURES[s.temperature].label.toLowerCase()} light`);
+  item.button.setAttribute('aria-label',`${item.name}, ${on?`on, ${TEMPERATURES[s.temperature].label.toLowerCase()} light`:'off'}`);
   return {item,color,on,fromColor:item.light.color.clone(),fromPower:item.light.intensity,
    shades:item.diffusers.map(m=>({m,color:m.color.clone(),emissive:m.emissive.clone(),power:m.emissiveIntensity}))};
  });
