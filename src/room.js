@@ -74,8 +74,14 @@ export async function createRoom(scene,renderer){
  // A quiet hanging textile in the left niche.
  const hanging=box(.016,.9,.48,-1.705,1.28,-.04,fabric);
  for(const y of [.82,1.74])box(.032,.027,.53,-1.68,y,-.04,dark);
- // Small ink-like vertical stroke on fabric (geometry is part of the textile).
- const ink=box(.005,.44,.018,-1.693,1.32,-.04,mat('#686e61'));ink.rotation.x=.13;
+ // User-selected Gohonzon: full image, original aspect ratio, no crop or mirroring.
+ const artwork=await new THREE.TextureLoader().loadAsync(`${import.meta.env.BASE_URL}art/sgi-gohonzon.jpg`);
+ artwork.colorSpace=THREE.SRGBColorSpace;
+ artwork.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+ const artWidth=.43,artHeight=artWidth*artwork.image.height/artwork.image.width;
+ const art=new THREE.Mesh(new THREE.PlaneGeometry(artWidth,artHeight),new THREE.MeshStandardMaterial({map:artwork,roughness:1,metalness:0}));
+ art.rotation.y=Math.PI/2;art.position.set(-1.695,1.28,-.04);art.receiveShadow=true;
+ room.add(art);
  // Tatami island, wooden border, low conversation seating.
  box(2.3,.024,1.95,-.08,.151,.34,dark);
  for(let x=0;x<2;x++)for(let z=0;z<2;z++){

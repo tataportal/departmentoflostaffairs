@@ -51,3 +51,5 @@
 #piece-story{padding:27px 0 20px;background:none;box-shadow:none;border:0;border-top:1px solid #eee9dc70;border-bottom:1px solid #eee9dc45;border-radius:0;color:#f2eee4;text-shadow:0 1px 4px #0009}
 #story-text{color:#f2eee4;line-height:1.9}#story-title{font-size:21px}#story-close{right:-6px;top:7px;color:#f2eee4}#story-name{padding-right:30px}
 @media(max-width:700px){#piece-story{left:24px;right:24px;padding:25px 0 18px}#controls .temperatures button{padding-left:10px;padding-right:10px}#controls .temperatures button[aria-pressed=true]:after{left:10px;right:10px}}
+
+.art-credits{margin-top:22px;font:9px "SFMono-Regular",Consolas,monospace;color:#66665b}.art-credits summary{cursor:pointer;letter-spacing:.08em}.brand-dialog .art-credits p{font-size:10px;line-height:1.7}
