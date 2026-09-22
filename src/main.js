@@ -66,8 +66,8 @@ function orbitProduct(){
 }
 const aim=new THREE.Vector3(),homeAim=new THREE.Vector3(0,.86,0),homeOffset=new THREE.Vector3(6,4.8,6);
 // Eye-level threshold view: enough setback to read the whole room.
-const entryAim=new THREE.Vector3(-.45,.95,-.25);
-const entryOffset=new THREE.Vector3(2.65,.65,2.15);
+const entryAim=new THREE.Vector3(-1.695,1.28,-.04);
+const entryOffset=new THREE.Vector3(3.92,0,0);
 function entryFov(aspect){return THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(35))*Math.max(1,1.3/aspect)));}
 let homeSpan=5.7;
 const raycaster=new THREE.Raycaster();

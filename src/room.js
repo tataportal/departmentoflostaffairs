@@ -82,15 +82,27 @@ export async function createRoom(scene,renderer){
   const geometry=new THREE.PlaneGeometry(w,h);surfaceUV(geometry,m,[w,h,.01]);
   const mesh=new THREE.Mesh(geometry,m);
   mesh.position.set(...position);mesh.rotation.set(...rotation);
-  mesh.receiveShadow=true;enclosure.add(mesh);return mesh;
+  mesh.receiveShadow=true;mesh.renderOrder=1;enclosure.add(mesh);return mesh;
  }
  interiorPlane(4.18,3.80,[.30,2.235,.225],[Math.PI/2,0,0],wall);
  interiorPlane(3.80,2.10,[2.385,1.185,.225],[0,-Math.PI/2,0],wall);
  interiorPlane(4.18,2.10,[.30,1.185,2.125],[0,Math.PI,0],wall);
+ // Shoji panels and timber joinery continue around the entrance-side wall.
+ function enclosureBox(w,h,d,x,y,z,material=dark){
+  const mesh=box(w,h,d,x,y,z,material);
+  mesh.material=fadeMaterial(material);mesh.castShadow=false;mesh.renderOrder=material===paper?2:3;enclosure.attach(mesh);return mesh;
+ }
+ for(const x of [-1.68,-.34,1.0,2.32])enclosureBox(.075,2.10,.07,x,1.185,2.07);
+ for(const y of [.20,2.17])enclosureBox(4.12,.08,.07,.32,y,2.07);
+ for(const x of [-1.01,.33,1.66]){
+  enclosureBox(1.24,1.84,.025,x,1.18,2.085,paper);
+  for(let i=-2;i<=2;i++)enclosureBox(.018,1.84,.023,x+i*.245,1.18,2.055);
+  for(let i=0;i<6;i++)enclosureBox(1.24,.019,.023,x,.40+i*.31,2.055);
+ }
  // Exposed timber overhead supplies scale cues while standing in the doorway.
  for(const x of [-1.1,-.15,.80,1.75]){
   const beam=box(.065,.065,3.80,x,2.20,.225,dark);
-  beam.material=fadeMaterial(dark);beam.castShadow=false;enclosure.attach(beam);
+  beam.material=fadeMaterial(dark);beam.castShadow=false;beam.renderOrder=3;enclosure.attach(beam);
  }
  room.userData.setInteriorVisibility=value=>{
   enclosure.visible=value>0;
@@ -100,6 +112,12 @@ export async function createRoom(scene,renderer){
  box(1.35,1.38,.032,.92,1.36,-1.565,paper);
  for(let i=0;i<7;i++)box(.019,1.43,.028,.26+i*.22,1.36,-1.535,dark);
  for(let i=0;i<6;i++)box(1.38,.019,.028,.92,.67+i*.276,-1.53,dark);
+ // Full-height shoji bay beside the hanging scroll, matching the reference room.
+ box(.027,1.82,1.27,-1.71,1.18,1.33,paper);
+ for(const z of [.67,1.99])box(.08,1.96,.065,-1.665,1.18,z,dark);
+ for(const y of [.22,2.14])box(.08,.065,1.38,-1.665,y,1.33,dark);
+ for(let i=0;i<5;i++)box(.023,1.82,.018,-1.683,1.18,.82+i*.255,dark);
+ for(let i=0;i<6;i++)box(.023,.019,1.27,-1.683,.41+i*.31,1.33,dark);
  // A quiet hanging textile in the left niche.
  const hanging=box(.016,.9,.48,-1.705,1.28,-.04,fabric);
  for(const y of [.82,1.74])box(.032,.027,.53,-1.68,y,-.04,dark);
