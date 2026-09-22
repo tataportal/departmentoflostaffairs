@@ -14,7 +14,7 @@ import {VignetteShader} from 'three/addons/shaders/VignetteShader.js';
 import {RectAreaLightUniformsLib} from 'three/addons/lights/RectAreaLightUniformsLib.js';
 import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
-import {createFilament} from './filament.js';
+import {createFilament,excludeRoomBounce} from './filament.js';
 import {createDust} from './atmosphere.js';
 import {createSound} from './sound.js';
 import {createRoom} from './room.js';
@@ -110,7 +110,11 @@ function updateLighting(t){
   item.light.color.lerpColors(fromColor,color,e);
   item.light.intensity=THREE.MathUtils.lerp(fromPower,on?item.power*(item.id.startsWith('pebble')?.06:item.id.startsWith('shibui')?.065:item.id==='shoji'?.018:.06):0,e);
   item.bounce.color.copy(item.light.color).lerp(new THREE.Color('#c4b69b'),.18);
-  item.bounce.intensity=item.light.intensity*.08;
+  const radiance=item.light.intensity / item.spillPower;
+  item.bounce.color.copy(item.light.color);
+  item.bounce.intensity=radiance*item.bouncePower;
+  item.wallWash.color.copy(item.light.color);
+  item.wallWash.intensity=radiance*item.wallPower;
   for(const {m,color:base,emissive,power} of shades){
    m.emissive.lerpColors(emissive,color,e);m.emissiveIntensity=THREE.MathUtils.lerp(power,on?(item.id.startsWith('pebble')?2.3:item.id==='shoji'?1.35:item.id==='toro'?2.8:item.id.startsWith('shibui')?2.8:2.2):0,e);
    m.color.lerpColors(base,new THREE.Color(on?'#f5f4ef':'#f5f5f2'),e);
@@ -172,16 +176,16 @@ async function init(){
  const contact=new SSAOPass(scene,camera,innerWidth,innerHeight,12);
  contact.kernelRadius=.045;contact.minDistance=.0001;contact.maxDistance=.003;
  composer.addPass(contact);
- composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.14,.55,1.2));
+ composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.2,.65,1.35));
  composer.addPass(new OutputPass());composer.addPass(new SMAAPass());
  const vignette=new ShaderPass(VignetteShader);vignette.uniforms.offset.value=.72;vignette.uniforms.darkness.value=1;composer.addPass(vignette);
  RectAreaLightUniformsLib.init();
- scene.add(new THREE.HemisphereLight(0xb5c5d3,0x4f3d2a,.6));
- const moon=new THREE.DirectionalLight(0xb5c7df,.42);moon.position.set(2,5,1);moon.castShadow=true;moon.shadow.mapSize.set(2048,2048);Object.assign(moon.shadow.camera,{left:-3,right:3,top:3,bottom:-3,near:.1,far:15});moon.shadow.normalBias=.02;moon.shadow.bias=-.0002;scene.add(moon);
+ scene.add(new THREE.HemisphereLight(0xffead4,0x59422c,.38));
+ const moon=new THREE.DirectionalLight(0xffdfb5,.48);moon.position.set(2,5,1);moon.castShadow=true;moon.shadow.mapSize.set(2048,2048);Object.assign(moon.shadow.camera,{left:-3,right:3,top:3,bottom:-3,near:.1,far:15});moon.shadow.normalBias=.02;moon.shadow.bias=-.0002;scene.add(moon);
  await createRoom(scene,renderer);
  // Prefiltered broad reflections give matte surfaces a readable shape.
  const studio=new RoomEnvironment(),pmrem=new THREE.PMREMGenerator(renderer);
- const environment=pmrem.fromScene(studio,.025);scene.environment=environment.texture;scene.environmentIntensity=.35;
+ const environment=pmrem.fromScene(studio,.025);scene.environment=environment.texture;scene.environmentIntensity=.2;
  studio.dispose();pmrem.dispose();
  const loader=new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
  await Promise.all(LAMPS.map(async(def)=>{
@@ -195,6 +199,7 @@ async function init(){
     if(def.id.startsWith('shibui'))obj.material.userData.ribbed=true;
     obj.material=createFilament(obj.material,shellBounds);
     diffusers.push(obj.material);}else{obj.material=new THREE.MeshPhysicalMaterial({name:obj.material.name,color:obj.material.name==='sand'?0xd9cbb4:0x65412b,roughness:obj.material.name==='sand'?.85:.4,metalness:0,clearcoat:.16,clearcoatRoughness:.4,envMapIntensity:1.4});}
+   excludeRoomBounce(obj.material);
   });
   const bounds=new THREE.Box3().setFromObject(group),anchor=bounds.getCenter(new THREE.Vector3());
   if(def.id==='toro')anchor.y=def.position[1]+1.05;
@@ -204,15 +209,24 @@ async function init(){
   light.castShadow=true;light.shadow.mapSize.set(1024,1024);light.shadow.radius=3;light.shadow.camera.near=.015;light.shadow.camera.far=3;light.shadow.bias=-.00015;light.shadow.normalBias=.0004;
   // The static room permits caching all cubemap shadows after first rendering.
   light.shadow.autoUpdate=false;light.shadow.needsUpdate=true;scene.add(light);
-  // Broad, surface-coloured fill approximates first-bounce indirect light.
-  // This is an artistic GI approximation, not ray-traced global illumination.
-  const bounce=new THREE.RectAreaLight(0xffbc73,0,.7,.6);
-  bounce.position.set(def.position[0],def.position[1]+.008,def.position[2]);
-  bounce.rotation.x=Math.PI/2;
-  if(def.id==='shoji'){bounce.position.copy(anchor);bounce.position.z-=.04;bounce.rotation.set(0,Math.PI,0);}
+  // Broad diffuse spill follows each lamp's power and temperature. Area sources
+  // soften the pools without the giant grid shadows of a stronger point light.
+  const pebble=def.id.startsWith('pebble'),shibui=def.id.startsWith('shibui');
+  const spillPower=def.power*(pebble?.06:shibui?.065:def.id==='shoji'?.018:.06);
+  const bouncePower=pebble?2.6:shibui?4.5:def.id==='toro'?3.5:3.0;
+  const wallPower=pebble?.6:shibui?4.5:def.id==='shoji'?1.8:5.8;
+  const bounce=new THREE.RectAreaLight(0xffbc73,0,pebble?.22:.35,pebble?.18:.3);
+  bounce.position.copy(anchor);bounce.position.y+=.12;
+  bounce.lookAt(def.position[0],def.position[1]-.2,def.position[2]);
   scene.add(bounce);
+  const wallWash=new THREE.RectAreaLight(0xffbc73,0,.5,.55);
+  wallWash.position.copy(anchor);wallWash.position.z+=.35;
+  if(def.id==='andon'){
+   wallWash.position.x+=.25;wallWash.position.z=anchor.z;wallWash.lookAt(-1.77,anchor.y,anchor.z);
+  }else wallWash.lookAt(anchor.x,anchor.y,-1.63);
+  scene.add(wallWash);
   const button=document.createElement('button');button.className='target';button.dataset.lamp=def.id;button.innerHTML=`<span>${def.name}</span>`;button.onclick=()=>selectLamp(def.id);$('targets').append(button);
-  models.push({...def,group,diffusers,light,bounce,button,bounds,anchor});
+  models.push({...def,group,diffusers,light,bounce,wallWash,spillPower,bouncePower,wallPower,button,bounds,anchor});
  }));
  dust=createDust(scene,models);
  // Order keyboard navigation consistently, independent of network completion order.

@@ -10,10 +10,10 @@ export async function createSurfaceLibrary(anisotropy=8){
   const ctx=c.getContext('2d',{willReadFrequently:true});
   ctx.drawImage(atlas,x*atlas.width/2,y*atlas.height/2,atlas.width/2,atlas.height/2,0,0,size,size);
   if(kind==='wood'){
-   // Remove the strong orange cast and baked contrast from the material tile.
+   // Keep the warm timber hue while reducing baked contrast.
    const data=ctx.getImageData(0,0,size,size);
    for(let i=0;i<data.data.length;i+=4){const l=.2126*data.data[i]+.7152*data.data[i+1]+.0722*data.data[i+2];
-    for(let channel=0;channel<3;channel++)data.data[i+channel]=128+(.58*data.data[i+channel]+.42*l-128)*.78;
+    for(let channel=0;channel<3;channel++)data.data[i+channel]=128+(.82*data.data[i+channel]+.18*l-128)*.78;
    }ctx.putImageData(data,0,0);
   }
   if(kind==='plaster'){
@@ -42,7 +42,7 @@ export async function createSurfaceLibrary(anisotropy=8){
   const material=new THREE.MeshPhysicalMaterial({color,map:m.color,bumpMap:m.bump,roughnessMap:m.rough,...specs[kind],...options});
   material.userData.surface=kind;return material;
  }
- return {wood:surface('wood','#d5c6b3'),dark:surface('wood','#8e8172'),edge:surface('wood','#615b50'),wall:surface('plaster','#e0dace'),fabric:surface('linen','#d0cbb8'),fabricDark:surface('linen','#828d78'),tatami:surface('tatami','#d2c6a8'),paper:surface('plaster','#d7dbc9',{bumpScale:.00035}),ceramic:surface('plaster','#545d50',{roughness:.72,clearcoat:.12,clearcoatRoughness:.6}),binding:surface('linen','#4c574b',{bumpScale:.001})};
+ return {wood:surface('wood','#dbc6aa'),dark:surface('wood','#a18b73'),edge:surface('wood','#615b50'),wall:surface('plaster','#e7d8bf'),fabric:surface('linen','#e0d3bc'),fabricDark:surface('linen','#828d78'),tatami:surface('tatami','#d2c6a8'),paper:surface('plaster','#d7dbc9',{bumpScale:.00035}),ceramic:surface('plaster','#545d50',{roughness:.72,clearcoat:.12,clearcoatRoughness:.6}),binding:surface('linen','#4c574b',{bumpScale:.001})};
 }
 
 // Metre-scaled box projection. Grain follows each part's long axis instead

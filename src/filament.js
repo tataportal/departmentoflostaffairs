@@ -35,3 +35,17 @@ export function createFilament(source,bounds){
  material.customProgramCacheKey=()=> source.userData.ribbed?'ribbed-pla-v4':'milky-pla-v2';
  return material;
 }
+
+// These area sources approximate light after it leaves the shade. Receiving them
+// on the originating product would count its illumination twice and wash it out.
+export function excludeRoomBounce(material){
+ const compile=material.onBeforeCompile.bind(material);
+ const key=material.customProgramCacheKey.bind(material);
+ const originalKey=key();
+ material.onBeforeCompile=shader=>{
+  compile(shader);
+  shader.fragmentShader=shader.fragmentShader.replace('#include <lights_physical_pars_fragment>',
+   '#include <lights_physical_pars_fragment>\n#undef RE_Direct_RectArea');
+ };
+ material.customProgramCacheKey=()=>originalKey+'-room-spill-v1';
+}
