@@ -68,6 +68,34 @@ export async function createRoom(scene,renderer){
  box(4.12,.12,.16,.315,2.19,-1.57,dark);
  box(4.08,.13,.1,.30,.19,-1.54,dark);
  box(.1,.13,3.70,-1.69,.19,.225,dark);
+ // Complete interior for the eye-level entrance. Inward-facing surfaces close
+ // the ceiling and the two cutaway sides instead of exposing the black void.
+ const enclosure=new THREE.Group();room.add(enclosure);
+ const enclosureMaterials=[];
+ function fadeMaterial(source){
+  const m=source.clone();m.onBeforeCompile=source.onBeforeCompile;
+  m.customProgramCacheKey=source.customProgramCacheKey;
+  m.transparent=true;m.depthWrite=false;enclosureMaterials.push(m);return m;
+ }
+ function interiorPlane(w,h,position,rotation,material){
+  const m=fadeMaterial(material);
+  const geometry=new THREE.PlaneGeometry(w,h);surfaceUV(geometry,m,[w,h,.01]);
+  const mesh=new THREE.Mesh(geometry,m);
+  mesh.position.set(...position);mesh.rotation.set(...rotation);
+  mesh.receiveShadow=true;enclosure.add(mesh);return mesh;
+ }
+ interiorPlane(4.18,3.80,[.30,2.235,.225],[Math.PI/2,0,0],wall);
+ interiorPlane(3.80,2.10,[2.385,1.185,.225],[0,-Math.PI/2,0],wall);
+ interiorPlane(4.18,2.10,[.30,1.185,2.125],[0,Math.PI,0],wall);
+ // Exposed timber overhead supplies scale cues while standing in the doorway.
+ for(const x of [-1.1,-.15,.80,1.75]){
+  const beam=box(.065,.065,3.80,x,2.20,.225,dark);
+  beam.material=fadeMaterial(dark);beam.castShadow=false;enclosure.attach(beam);
+ }
+ room.userData.setInteriorVisibility=value=>{
+  enclosure.visible=value>0;
+  for(const material of enclosureMaterials)material.opacity=value;
+ };
  // Recessed shoji window across the right half of the back wall.
  box(1.35,1.38,.032,.92,1.36,-1.565,paper);
  for(let i=0;i<7;i++)box(.019,1.43,.028,.26+i*.22,1.36,-1.535,dark);

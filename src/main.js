@@ -33,7 +33,7 @@ function finishIntro(){
  $('enter').hidden=true;document.body.classList.remove('introducing','awaiting-entry','door-opening');
  $('targets').inert=false;$('targets').hidden=false;
  if(entryCamera){cameraTravel=null;scenePass.camera=camera;contactPass.enabled=true;dirty=true;}
- sound.stopSignature();applyLights();
+ room?.userData.setInteriorVisibility(0);sound.stopSignature();applyLights();
 }
 function startIntro(){
  if(introPhase!=='waiting')return;
@@ -43,7 +43,7 @@ function startIntro(){
  const openingDuration=reduceMotion.matches?0:1500;
  introTimers.push(setTimeout(()=>{
   $('enter').hidden=true;document.body.classList.remove('awaiting-entry','door-opening');
-  if(reduceMotion.matches){scenePass.camera=camera;contactPass.enabled=true;}
+  if(reduceMotion.matches){scenePass.camera=camera;contactPass.enabled=true;room.userData.setInteriorVisibility(0);}
   else cameraTravel={start:performance.now()+3500,duration:2700};
   dirty=true;requestFrame();
  },openingDuration));
@@ -58,7 +58,7 @@ updateSound();
 $('sound').onclick=()=>{sound.toggle();updateSound();if(sound.enabled)sound.play(selected,'select');};
 const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)');
 let selected=null,models=[],animation=null,lighting=null,frame=0,dirty=true;
-let camera,renderer,composer,scene,dust,entryCamera,scenePass,contactPass,cameraTravel=null;
+let camera,renderer,composer,scene,dust,room,entryCamera,scenePass,contactPass,cameraTravel=null;
 let dustTime=0,lastRender=0;
 let orbitYaw=0,orbitPitch=.12,drag=null;
 function orbitProduct(){
@@ -67,8 +67,8 @@ function orbitProduct(){
 const aim=new THREE.Vector3(),homeAim=new THREE.Vector3(0,.86,0),homeOffset=new THREE.Vector3(6,4.8,6);
 // Eye-level threshold view: enough setback to read the whole room.
 const entryAim=new THREE.Vector3(-.45,.95,-.25);
-const entryOffset=new THREE.Vector3(3.15,.65,2.55);
-function entryFov(aspect){return THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(30))*Math.max(1,1.3/aspect)));}
+const entryOffset=new THREE.Vector3(2.65,.65,2.15);
+function entryFov(aspect){return THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(35))*Math.max(1,1.3/aspect)));}
 let homeSpan=5.7;
 const raycaster=new THREE.Raycaster();
 const pointer=new THREE.Vector2();
@@ -193,7 +193,11 @@ function render(time){
  if(!dirty&&!animation&&!lighting&&!cameraTravel&&lastRender&&time-lastRender<33){requestFrame();return;}
  if(cameraTravel){
   const t=THREE.MathUtils.clamp((time-cameraTravel.start)/cameraTravel.duration,0,1);
-  const e=t*t*t*(t*(t*6-15)+10);
+  // Uncover the architectural cutaway before lifting through the ceiling.
+  const reveal=THREE.MathUtils.smoothstep(t,0,.20);
+  room.userData.setInteriorVisibility(1-reveal);
+  const travel=THREE.MathUtils.clamp((t-.14)/.86,0,1);
+  const e=travel*travel*travel*(travel*(travel*6-15)+10);
   const povAim=entryAim.clone(),povOffset=entryOffset.clone();
   const distance=povOffset.length()*Math.pow(120/povOffset.length(),e);
   const direction=povOffset.clone().normalize().lerp(homeOffset.clone().normalize(),e).normalize();
@@ -243,7 +247,7 @@ async function init(){
  RectAreaLightUniformsLib.init();
  scene.add(new THREE.HemisphereLight(0xffead4,0x59422c,.38));
  const moon=new THREE.DirectionalLight(0xffdfb5,.48);moon.position.set(2,5,1);moon.castShadow=true;moon.shadow.mapSize.set(2048,2048);Object.assign(moon.shadow.camera,{left:-3,right:3,top:3,bottom:-3,near:.1,far:15});moon.shadow.normalBias=.02;moon.shadow.bias=-.0002;scene.add(moon);
- await createRoom(scene,renderer);
+ room=await createRoom(scene,renderer);
  // Prefiltered broad reflections give matte surfaces a readable shape.
  const studio=new RoomEnvironment(),pmrem=new THREE.PMREMGenerator(renderer);
  const environment=pmrem.fromScene(studio,.025);scene.environment=environment.texture;scene.environmentIntensity=.2;
