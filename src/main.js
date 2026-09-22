@@ -8,6 +8,7 @@ import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
 import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
 import {SSAOPass} from 'three/addons/postprocessing/SSAOPass.js';
+import {SMAAPass} from 'three/addons/postprocessing/SMAAPass.js';
 import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
 import {VignetteShader} from 'three/addons/shaders/VignetteShader.js';
 import {RectAreaLightUniformsLib} from 'three/addons/lights/RectAreaLightUniformsLib.js';
@@ -30,6 +31,10 @@ let selected=null,models=[],animation=null,lighting=null,frame=0,dirty=true;
 let camera,renderer,composer,scene,dof,dust;
 let dustTime=0,lastRender=0;
 const focusPoint=new THREE.Vector3();
+let orbitYaw=0,orbitPitch=.12,drag=null;
+function orbitProduct(){
+ const distance=4;camera.position.set(aim.x+Math.sin(orbitYaw)*Math.cos(orbitPitch)*distance,aim.y+Math.sin(orbitPitch)*distance,aim.z+Math.cos(orbitYaw)*Math.cos(orbitPitch)*distance);camera.lookAt(aim);dirty=true;requestFrame();
+}
 const aim=new THREE.Vector3(),homeAim=new THREE.Vector3(0,.86,0),homeOffset=new THREE.Vector3(6,4.8,6);
 let homeSpan=5.2;
 const raycaster=new THREE.Raycaster();
@@ -59,9 +64,10 @@ function focus(id,animate=true){
  // Crop to the light-bearing part of a standing lamp; other lamps remain whole.
  if(id==='toro')center.y=item.position[1]+1.07;
  const portrait=innerWidth/innerHeight<.85;
- const span=({toro:1.02,'shibui-stack':.88,shibui:.64,shoji:.72,pebble:.64,'pebble-compact':.64})[id]||.78;
+ const span=({toro:.72,'shibui-stack':.49,shibui:.28,shoji:.45,pebble:.32,'pebble-compact':.26})[id]||.44;
  // Raise view target slightly downward to put the lamp above the bottom controls.
- const direction=new THREE.Vector3(.8,.42,1.2).normalize();
+ orbitYaw=0;orbitPitch=id.startsWith('pebble')?.4:.12;
+ const direction=new THREE.Vector3(0,Math.sin(orbitPitch),Math.cos(orbitPitch));
  const target=center.clone();target.y-=portrait?span*.06:span*.09;
  transition(target,direction.multiplyScalar(4),span*(portrait?1.28:1),animate);
 }
@@ -107,8 +113,8 @@ function updateLighting(t){
   item.bounce.color.copy(item.light.color).lerp(new THREE.Color('#c4b69b'),.18);
   item.bounce.intensity=item.light.intensity*.6;
   for(const {m,color:base,emissive,power} of shades){
-   m.emissive.lerpColors(emissive,color,e);m.emissiveIntensity=THREE.MathUtils.lerp(power,on?.8:0,e);
-   m.color.lerpColors(base,new THREE.Color(on?'#a29a83':'#b7b4a8'),e);
+   m.emissive.lerpColors(emissive,color,e);m.emissiveIntensity=THREE.MathUtils.lerp(power,on?.48:0,e);
+   m.color.lerpColors(base,new THREE.Color(on?'#f5f4ef':'#f5f5f2'),e);
   }
  }
  dirty=true;if(t===1)lighting=null;
@@ -173,7 +179,7 @@ async function init(){
  composer.addPass(contact);
  dof=createFocusPass(scene,camera);composer.addPass(dof);
  composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.24,.65,1.05));
- composer.addPass(new OutputPass());
+ composer.addPass(new OutputPass());composer.addPass(new SMAAPass());
  const vignette=new ShaderPass(VignetteShader);vignette.uniforms.offset.value=.72;vignette.uniforms.darkness.value=1;composer.addPass(vignette);
  RectAreaLightUniformsLib.init();
  scene.add(new THREE.HemisphereLight(0xb5c5d3,0x4f3d2a,.6));
@@ -185,11 +191,11 @@ async function init(){
   const group=gltf.scene;if(def.id.startsWith('shibui'))replaceShibuiSurface(group,def.id);group.position.set(...def.position);scene.add(group);
   const diffusers=[];
   group.traverse(obj=>{if(!obj.isMesh)return;obj.userData.lampId=def.id;obj.castShadow=true;obj.receiveShadow=true;obj.material=obj.material.clone();
-   if(obj.material.name==='diffuser'){obj.castShadow=false;obj.receiveShadow=false;obj.material.side=THREE.FrontSide;
+   if(obj.material.name==='diffuser'){obj.castShadow=false;obj.receiveShadow=false;obj.material.side=THREE.FrontSide;obj.material.roughness=.72;
     // Gentle thickness cue preserves the form when the shade emits light.
     obj.material.onBeforeCompile=shader=>{shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance *= 0.48 + 0.52 * pow(abs(dot(normal, normalize(vViewPosition))), 0.8);');};
     obj.material.customProgramCacheKey=()=> 'diffuser-volume-v1';
-    diffusers.push(obj.material);}else{obj.material.roughness=.58;obj.material.metalness=0;}
+    diffusers.push(obj.material);}else{obj.material.roughness=.58;obj.material.metalness=0;if(def.id.startsWith('shibui')){obj.material.color.set('#f5f5f2');obj.material.roughness=.72;}}
   });
   const bounds=new THREE.Box3().setFromObject(group),anchor=bounds.getCenter(new THREE.Vector3());
   if(def.id==='toro')anchor.y=def.position[1]+1.05;
@@ -211,10 +217,27 @@ async function init(){
  dust=createDust(scene,models);
  // Order keyboard navigation consistently, independent of network completion order.
  for(const def of LAMPS)$('targets').append(models.find(m=>m.id===def.id).button);
+ renderer.domElement.style.touchAction='none';
+ renderer.domElement.addEventListener('pointerdown',e=>{
+  if(e.button!==0)return;drag={id:e.pointerId,x:e.clientX,y:e.clientY,yaw:orbitYaw,pitch:orbitPitch,moved:false};
+  renderer.domElement.setPointerCapture(e.pointerId);
+ });
+ renderer.domElement.addEventListener('pointermove',e=>{
+  if(!drag||drag.id!==e.pointerId||!selected||animation)return;
+  const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+  if(Math.hypot(dx,dy)>5)drag.moved=true;
+  if(!drag.moved)return;
+  orbitYaw=THREE.MathUtils.clamp(drag.yaw-dx*.004,-.55,.55);
+  orbitPitch=THREE.MathUtils.clamp(drag.pitch+dy*.003,-.04,.5);orbitProduct();
+ });
+ renderer.domElement.addEventListener('pointercancel',()=>{drag=null;});
  renderer.domElement.addEventListener('pointerup',e=>{
+  if(!drag||drag.id!==e.pointerId)return;const moved=drag.moved;drag=null;
+  if(renderer.domElement.hasPointerCapture(e.pointerId))renderer.domElement.releasePointerCapture(e.pointerId);
+  if(moved)return;
   pointer.set(e.clientX/innerWidth*2-1,-e.clientY/innerHeight*2+1);raycaster.setFromCamera(pointer,camera);
   const hit=raycaster.intersectObjects(scene.children,true)[0];
-  if(hit?.object.userData.lampId)selectLamp(hit.object.userData.lampId);
+  if(hit?.object.userData.lampId&&hit.object.userData.lampId!==selected)selectLamp(hit.object.userData.lampId);
  });
  // Populate all shadows once, even for lamps restored as off.
  fit();applyLights(false);composer.render();
