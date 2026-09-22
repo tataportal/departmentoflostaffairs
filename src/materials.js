@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-// Four independent material scans. Crop at load time to keep each tile's
+// Four independent material tiles. Crop at load time to keep each tile's
 // mip chain isolated: linen must never bleed into wood at a distance.
 export async function createSurfaceLibrary(anisotropy=8){
  const atlas=await new THREE.ImageLoader().loadAsync(`${import.meta.env.BASE_URL}textures/japandi-materials-v1.png`);
@@ -26,7 +26,7 @@ export async function createSurfaceLibrary(anisotropy=8){
  }
  function surface(kind,color,options={}){
   const m=maps[kind];
-  const specs={wood:{roughness:.98,bumpScale:.0011,clearcoat:.035,clearcoatRoughness:.85},linen:{roughness:1,bumpScale:.0017,sheen:1,sheenColor:new THREE.Color('#d4cfba'),sheenRoughness:.88},tatami:{roughness:1,bumpScale:.0022},plaster:{roughness:1,bumpScale:.0012}};
+  const specs={wood:{roughness:.82,bumpScale:.00028,clearcoat:.12,clearcoatRoughness:.62},linen:{roughness:1,bumpScale:.00065,sheen:1,sheenColor:new THREE.Color('#d4cfba'),sheenRoughness:.88},tatami:{roughness:1,bumpScale:.0008},plaster:{roughness:1,bumpScale:.00025}};
   const material=new THREE.MeshPhysicalMaterial({color,map:m.color,bumpMap:m.bump,roughnessMap:m.rough,...specs[kind],...options});
   material.userData.surface=kind;return material;
  }

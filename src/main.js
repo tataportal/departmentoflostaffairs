@@ -14,6 +14,8 @@ import {VignetteShader} from 'three/addons/shaders/VignetteShader.js';
 import {RectAreaLightUniformsLib} from 'three/addons/lights/RectAreaLightUniformsLib.js';
 import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 import {replaceShibuiSurface} from './shibui-surface.js';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+import {createFilament} from './filament.js';
 import {createFocusPass,createDust} from './atmosphere.js';
 import {createSound} from './sound.js';
 import {createRoom} from './room.js';
@@ -111,7 +113,7 @@ function updateLighting(t){
   item.light.color.lerpColors(fromColor,color,e);
   item.light.intensity=THREE.MathUtils.lerp(fromPower,on?item.power*(item.id.startsWith('pebble')?.2:1):0,e);
   item.bounce.color.copy(item.light.color).lerp(new THREE.Color('#c4b69b'),.18);
-  item.bounce.intensity=item.light.intensity*(item.id.startsWith('pebble')?0:.6);
+  item.bounce.intensity=item.light.intensity*(item.id.startsWith('pebble')?0:.28);
   for(const {m,color:base,emissive,power} of shades){
    m.emissive.lerpColors(emissive,color,e);m.emissiveIntensity=THREE.MathUtils.lerp(power,on?(item.id.startsWith('pebble')?1.1:item.id==='shoji'?.32:item.id==='toro'?.72:.48):0,e);
    m.color.lerpColors(base,new THREE.Color(on?'#f5f4ef':'#f5f5f2'),e);
@@ -167,8 +169,8 @@ function render(time){
 async function init(){
  scene=new THREE.Scene();scene.background=new THREE.Color('#16191a');
  renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
- renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFShadowMap;
- renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.18;
+ renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+ renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.02;
  $('scene').append(renderer.domElement);renderer.domElement.setAttribute('aria-hidden','true');
  renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();showError(new Error('Se perdió el contexto 3D.'));});
  camera=new THREE.OrthographicCamera(-1,1,1,-1,.02,40);camera.layers.enable(1);
@@ -178,13 +180,17 @@ async function init(){
  contact.kernelRadius=.12;contact.minDistance=.00015;contact.maxDistance=.009;
  composer.addPass(contact);
  dof=createFocusPass(scene,camera);composer.addPass(dof);
- composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.24,.65,1.05));
+ composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.14,.55,1.2));
  composer.addPass(new OutputPass());composer.addPass(new SMAAPass());
  const vignette=new ShaderPass(VignetteShader);vignette.uniforms.offset.value=.72;vignette.uniforms.darkness.value=1;composer.addPass(vignette);
  RectAreaLightUniformsLib.init();
  scene.add(new THREE.HemisphereLight(0xb5c5d3,0x4f3d2a,.6));
  const moon=new THREE.DirectionalLight(0xb5c7df,.42);moon.position.set(2,5,1);moon.castShadow=true;moon.shadow.mapSize.set(2048,2048);Object.assign(moon.shadow.camera,{left:-3,right:3,top:3,bottom:-3,near:.1,far:15});moon.shadow.normalBias=.02;moon.shadow.bias=-.0002;scene.add(moon);
  await createRoom(scene,renderer);
+ // Prefiltered broad reflections give matte surfaces a readable shape.
+ const studio=new RoomEnvironment(),pmrem=new THREE.PMREMGenerator(renderer);
+ const environment=pmrem.fromScene(studio,.025);scene.environment=environment.texture;scene.environmentIntensity=.16;
+ studio.dispose();pmrem.dispose();
  const loader=new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
  await Promise.all(LAMPS.map(async(def)=>{
   const gltf=await loader.loadAsync(`${import.meta.env.BASE_URL}models/${def.id}.glb`);
@@ -193,9 +199,8 @@ async function init(){
   const diffusers=[],stoneBounds=new THREE.Box3();
   group.traverse(obj=>{if(!obj.isMesh)return;obj.userData.lampId=def.id;obj.castShadow=true;obj.receiveShadow=true;obj.material=obj.material.clone();
    if(obj.material.name==='diffuser'){if(def.id.startsWith('pebble'))stoneBounds.expandByObject(obj);obj.castShadow=false;obj.receiveShadow=false;obj.material.side=THREE.FrontSide;obj.material.roughness=.72;
-    // Gentle thickness cue preserves the form when the shade emits light.
-    obj.material.onBeforeCompile=shader=>{shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance *= 0.48 + 0.52 * pow(abs(dot(normal, normalize(vViewPosition))), 0.8);');};
-    obj.material.customProgramCacheKey=()=> 'diffuser-volume-v1';
+    const shellBounds=new THREE.Box3().setFromObject(obj);
+    obj.material=createFilament(obj.material,shellBounds);
     diffusers.push(obj.material);}else{obj.material.roughness=.58;obj.material.metalness=0;if(def.id.startsWith('shibui')){obj.material.color.set('#f5f5f2');obj.material.roughness=.72;}}
   });
   const bounds=new THREE.Box3().setFromObject(group),anchor=bounds.getCenter(new THREE.Vector3());
@@ -203,7 +208,7 @@ async function init(){
   if(def.id.startsWith('pebble')&&!stoneBounds.isEmpty())stoneBounds.getCenter(anchor);
   const light=new THREE.PointLight(0xffbc73,def.power,2.7,2);
   light.position.copy(anchor);if(def.id==='shoji')light.position.z+=.09;
-  light.castShadow=true;light.shadow.mapSize.set(512,512);light.shadow.radius=3;light.shadow.camera.near=.015;light.shadow.camera.far=3;light.shadow.bias=-.001;light.shadow.normalBias=.015;
+  light.castShadow=true;light.shadow.mapSize.set(1024,1024);light.shadow.radius=3;light.shadow.camera.near=.015;light.shadow.camera.far=3;light.shadow.bias=-.00015;light.shadow.normalBias=.002;
   // The static room permits caching all cubemap shadows after first rendering.
   light.shadow.autoUpdate=false;light.shadow.needsUpdate=true;scene.add(light);
   // Broad, surface-coloured fill approximates first-bounce indirect light.
