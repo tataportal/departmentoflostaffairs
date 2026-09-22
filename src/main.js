@@ -16,7 +16,7 @@ import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {createFilament,excludeRoomBounce} from './filament.js';
 import {createDust} from './atmosphere.js';
-import {createSound} from './sound.js';
+import {createSound,SIGNATURE_ORDER} from './sound.js';
 import {createRoom} from './room.js';
 import {LAMPS,TEMPERATURES,loadState,saveState,STORAGE_KEY} from './state.js';
 
@@ -26,7 +26,7 @@ let state=loadState(storage);
 const sound=createSound(storage);
 // The introduction is a visual overlay; it never overwrites saved lamp choices.
 let introPhase='waiting',introLit=new Set(),introTimers=[];
-const introOrder=['andon','toro','shoji','shibui','shibui-stack','pebble','pebble-compact'];
+const introOrder=SIGNATURE_ORDER;
 function finishIntro(){
  introTimers.forEach(clearTimeout);introTimers=[];introPhase='done';
  $('enter').hidden=true;document.body.classList.remove('introducing');
@@ -155,7 +155,7 @@ $('previous').onclick=()=>moveLamp(-1);
 $('next').onclick=()=>moveLamp(1);
 $('power').onclick=()=>{if(selected){state[selected].on=!state[selected].on;sound.play(selected,state[selected].on?'on':'off');commit();}};
 for(const b of temperatureButtons)b.onclick=()=>{if(selected){state[selected].temperature=b.dataset.temp;state[selected].on=true;sound.play(selected,'temperature',b.dataset.temp);commit();}};
-window.addEventListener('keydown',e=>{if(!selected)return;if(e.key==='Escape')back();if(e.key==='ArrowLeft'){e.preventDefault();moveLamp(-1);}if(e.key==='ArrowRight'){e.preventDefault();moveLamp(1);}});
+window.addEventListener('keydown',e=>{if(document.querySelector('dialog[open]')||!selected)return;if(e.key==='Escape')back();if(e.key==='ArrowLeft'){e.preventDefault();moveLamp(-1);}if(e.key==='ArrowRight'){e.preventDefault();moveLamp(1);}});
 window.addEventListener('storage',e=>{if(e.key===STORAGE_KEY){state=loadState(storage);applyLights();updatePanel();}});
 function updateTargets(){
  for(const item of models){
@@ -285,3 +285,12 @@ async function init(){
  dirty=true;requestFrame();
 }
 init().catch(showError);
+
+// Native dialogs keep the room uncluttered and restore keyboard focus on close.
+for(const button of document.querySelectorAll('[data-dialog]'))button.onclick=()=>{
+ document.getElementById(button.dataset.dialog).showModal();
+};
+for(const dialog of document.querySelectorAll('.brand-dialog')){
+ dialog.querySelector('.dialog-close').onclick=()=>dialog.close();
+ dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close();}});
+}
