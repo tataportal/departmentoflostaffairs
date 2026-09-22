@@ -1,4 +1,5 @@
 import {storyFor} from './stories.js';
+import {emissionGain} from './lighting.js';
 import './style.css';
 import speakerOn from '@phosphor-icons/core/assets/regular/speaker-high.svg?raw';
 import speakerOff from '@phosphor-icons/core/assets/regular/speaker-slash.svg?raw';
@@ -141,7 +142,7 @@ function applyLights(animate=true){
   const s=state[item.id],color=new THREE.Color(TEMPERATURES[s.temperature].color);
   const on=introPhase==='done'?s.on:introLit.has(item.id);
   item.button.setAttribute('aria-label',`${item.name}, ${on?`on, ${TEMPERATURES[s.temperature].label.toLowerCase()} light`:'off'}`);
-  return {item,color,on,fromColor:item.light.color.clone(),fromPower:item.light.intensity,
+  return {item,color,on,gain:emissionGain(color),fromColor:item.light.color.clone(),fromPower:item.light.intensity,
    shades:item.diffusers.map(m=>({m,color:m.color.clone(),emissive:m.emissive.clone(),power:m.emissiveIntensity}))};
  });
  const allOff=changes.every(change=>!change.on);
@@ -165,7 +166,7 @@ function updateLighting(t){
  hemisphere.intensity=THREE.MathUtils.lerp(a.skyPower,a.targetSkyPower,blend);
  moon.intensity=THREE.MathUtils.lerp(a.keyPower,a.targetKeyPower,blend);
  scene.environmentIntensity=THREE.MathUtils.lerp(a.environment,a.targetEnvironment,blend);
- for(const {item,color,on,fromColor,fromPower,shades} of lighting.changes){
+ for(const {item,color,on,gain,fromColor,fromPower,shades} of lighting.changes){
   item.light.color.lerpColors(fromColor,color,e);
   item.light.intensity=THREE.MathUtils.lerp(fromPower,on?item.power*(item.id.startsWith('pebble')?.06:item.id.startsWith('shibui')?.065:item.id==='shoji'?.018:.06):0,e);
   item.bounce.color.copy(item.light.color).lerp(new THREE.Color('#c4b69b'),.18);
@@ -175,7 +176,7 @@ function updateLighting(t){
   item.wallWash.color.copy(item.light.color);
   item.wallWash.intensity=radiance*item.wallPower;
   for(const {m,color:base,emissive,power} of shades){
-   m.emissive.lerpColors(emissive,color,e);m.emissiveIntensity=THREE.MathUtils.lerp(power,on?(item.id.startsWith('pebble')?2.3:item.id==='shoji'?1.35:item.id==='toro'?2.8:item.id.startsWith('shibui')?2.8:2.2):0,e);
+   m.emissive.lerpColors(emissive,color,e);m.emissiveIntensity=THREE.MathUtils.lerp(power,on?gain*(item.id.startsWith('pebble')?2.3:item.id==='shoji'?1.35:item.id==='toro'?2.8:item.id.startsWith('shibui')?2.8:2.2):0,e);
    m.color.lerpColors(base,new THREE.Color(on?'#f5f4ef':'#f5f5f2'),e);
   }
  }
@@ -208,11 +209,10 @@ function render(time){
  if(!dirty&&!animation&&!lighting&&!cameraTravel&&lastRender&&time-lastRender<33){requestFrame();return;}
  if(cameraTravel){
   const t=THREE.MathUtils.clamp((time-cameraTravel.start)/cameraTravel.duration,0,1);
-  // Uncover the architectural cutaway before lifting through the ceiling.
-  const reveal=THREE.MathUtils.smoothstep(t,0,.20);
+  // Camera and cutaway share one clock; walls fade while the camera moves.
+  const reveal=THREE.MathUtils.smoothstep(t,.04,.38);
   room.userData.setInteriorVisibility(1-reveal);
-  const travel=THREE.MathUtils.clamp((t-.14)/.86,0,1);
-  const e=travel*travel*travel*(travel*(travel*6-15)+10);
+  const e=t*t*t*(t*(t*6-15)+10);
   const povAim=entryAim.clone(),povOffset=entryOffset.clone();
   const distance=povOffset.length()*Math.pow(120/povOffset.length(),e);
   const direction=povOffset.clone().normalize().lerp(homeOffset.clone().normalize(),e).normalize();
