@@ -109,11 +109,11 @@ function updateLighting(t){
  const e=t*t*(3-2*t);
  for(const {item,color,on,fromColor,fromPower,shades} of lighting.changes){
   item.light.color.lerpColors(fromColor,color,e);
-  item.light.intensity=THREE.MathUtils.lerp(fromPower,on?item.power:0,e);
+  item.light.intensity=THREE.MathUtils.lerp(fromPower,on?item.power*(item.id.startsWith('pebble')?.2:1):0,e);
   item.bounce.color.copy(item.light.color).lerp(new THREE.Color('#c4b69b'),.18);
-  item.bounce.intensity=item.light.intensity*.6;
+  item.bounce.intensity=item.light.intensity*(item.id.startsWith('pebble')?0:.6);
   for(const {m,color:base,emissive,power} of shades){
-   m.emissive.lerpColors(emissive,color,e);m.emissiveIntensity=THREE.MathUtils.lerp(power,on?.48:0,e);
+   m.emissive.lerpColors(emissive,color,e);m.emissiveIntensity=THREE.MathUtils.lerp(power,on?(item.id.startsWith('pebble')?1.1:.48):0,e);
    m.color.lerpColors(base,new THREE.Color(on?'#f5f4ef':'#f5f5f2'),e);
   }
  }
@@ -189,9 +189,10 @@ async function init(){
  await Promise.all(LAMPS.map(async(def)=>{
   const gltf=await loader.loadAsync(`${import.meta.env.BASE_URL}models/${def.id}.glb`);
   const group=gltf.scene;if(def.id.startsWith('shibui'))replaceShibuiSurface(group,def.id);group.position.set(...def.position);scene.add(group);
-  const diffusers=[];
+  group.updateMatrixWorld(true);
+  const diffusers=[],stoneBounds=new THREE.Box3();
   group.traverse(obj=>{if(!obj.isMesh)return;obj.userData.lampId=def.id;obj.castShadow=true;obj.receiveShadow=true;obj.material=obj.material.clone();
-   if(obj.material.name==='diffuser'){obj.castShadow=false;obj.receiveShadow=false;obj.material.side=THREE.FrontSide;obj.material.roughness=.72;
+   if(obj.material.name==='diffuser'){if(def.id.startsWith('pebble'))stoneBounds.expandByObject(obj);obj.castShadow=false;obj.receiveShadow=false;obj.material.side=THREE.FrontSide;obj.material.roughness=.72;
     // Gentle thickness cue preserves the form when the shade emits light.
     obj.material.onBeforeCompile=shader=>{shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance *= 0.48 + 0.52 * pow(abs(dot(normal, normalize(vViewPosition))), 0.8);');};
     obj.material.customProgramCacheKey=()=> 'diffuser-volume-v1';
@@ -199,6 +200,7 @@ async function init(){
   });
   const bounds=new THREE.Box3().setFromObject(group),anchor=bounds.getCenter(new THREE.Vector3());
   if(def.id==='toro')anchor.y=def.position[1]+1.05;
+  if(def.id.startsWith('pebble')&&!stoneBounds.isEmpty())stoneBounds.getCenter(anchor);
   const light=new THREE.PointLight(0xffbc73,def.power,2.7,2);
   light.position.copy(anchor);if(def.id==='shoji')light.position.z+=.09;
   light.castShadow=true;light.shadow.mapSize.set(512,512);light.shadow.radius=3;light.shadow.camera.near=.015;light.shadow.camera.far=3;light.shadow.bias=-.001;light.shadow.normalBias=.015;
