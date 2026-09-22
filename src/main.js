@@ -113,7 +113,7 @@ function updateLighting(t){
   item.bounce.color.copy(item.light.color).lerp(new THREE.Color('#c4b69b'),.18);
   item.bounce.intensity=item.light.intensity*(item.id.startsWith('pebble')?0:.6);
   for(const {m,color:base,emissive,power} of shades){
-   m.emissive.lerpColors(emissive,color,e);m.emissiveIntensity=THREE.MathUtils.lerp(power,on?(item.id.startsWith('pebble')?1.1:.48):0,e);
+   m.emissive.lerpColors(emissive,color,e);m.emissiveIntensity=THREE.MathUtils.lerp(power,on?(item.id.startsWith('pebble')?1.1:item.id==='shoji'?.32:item.id==='toro'?.72:.48):0,e);
    m.color.lerpColors(base,new THREE.Color(on?'#f5f4ef':'#f5f5f2'),e);
   }
  }
