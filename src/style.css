@@ -85,3 +85,11 @@
 .awaiting-entry .brand-signature,.awaiting-entry .brand-nav{visibility:hidden}.awaiting-entry #sound{z-index:8;color:#30291e;background:#e7e0cd;border:1px solid #8d8066;bottom:35px;right:30px}
 #loading{z-index:9;background:#151812}#loading p{color:#e0dacb}
 @media(max-width:700px){#enter .shoji-leaf{border-width:10px;border-top-width:18px;border-bottom-width:20px}#enter .shoji-left{border-right-width:18px}#enter .shoji-right{border-left-width:18px}#enter .shoji-lattice{background-size:50% 100%,100% 16.6667%}#enter .door-sign{left:10px;top:7%;padding:14px 10px}#enter .door-sign>span{font-size:9px;letter-spacing:.08em}#enter .door-sign small{font-size:6px;letter-spacing:.05em}#enter .door-invitation{bottom:10%}#enter .shoji-left .shoji-handle{right:-13px}#enter .shoji-right .shoji-handle{left:-13px}}
+
+/* Centered identity on the threshold, without a plaque or backing. */
+#enter.shoji-entry .door-sign{left:50%;top:50%;width:calc(100% - 48px);padding:0;margin:0;transform:translate(-50%,-50%);background:none;box-shadow:none;text-align:center;color:#f2eee4;mix-blend-mode:difference;pointer-events:none;transition:opacity .25s ease}
+#enter.shoji-entry .door-sign>span{font-size:clamp(20px,3.15vw,46px);font-weight:300;line-height:1.55;letter-spacing:.22em;padding-left:.22em}
+#enter.shoji-entry .door-sign small{margin-top:25px;font-size:10px;letter-spacing:.24em;color:inherit;padding-left:.24em}
+.door-opening #enter.shoji-entry .door-sign{opacity:0}
+#enter.shoji-entry .door-invitation{padding:12px 0;background:none;color:#f2eee4;mix-blend-mode:difference}
+@media(max-width:700px){#enter.shoji-entry .door-sign>span{font-size:clamp(19px,5.2vw,30px);letter-spacing:.15em;padding-left:.15em}#enter.shoji-entry .door-sign small{font-size:8px;margin-top:20px;letter-spacing:.18em}}
