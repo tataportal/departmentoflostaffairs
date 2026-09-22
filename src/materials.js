@@ -9,6 +9,13 @@ export async function createSurfaceLibrary(anisotropy=8){
   const size=1024,c=document.createElement('canvas');c.width=c.height=size;
   const ctx=c.getContext('2d',{willReadFrequently:true});
   ctx.drawImage(atlas,x*atlas.width/2,y*atlas.height/2,atlas.width/2,atlas.height/2,0,0,size,size);
+  if(kind==='wood'){
+   // Remove the strong orange cast and baked contrast from the material tile.
+   const data=ctx.getImageData(0,0,size,size);
+   for(let i=0;i<data.data.length;i+=4){const l=.2126*data.data[i]+.7152*data.data[i+1]+.0722*data.data[i+2];
+    for(let channel=0;channel<3;channel++)data.data[i+channel]=128+(.58*data.data[i+channel]+.42*l-128)*.78;
+   }ctx.putImageData(data,0,0);
+  }
   const color=new THREE.CanvasTexture(c);color.colorSpace=THREE.SRGBColorSpace;
   const heightCanvas=document.createElement('canvas');heightCanvas.width=heightCanvas.height=size;
   const heightCtx=heightCanvas.getContext('2d'),heightData=ctx.getImageData(0,0,size,size);
@@ -38,7 +45,7 @@ export async function createSurfaceLibrary(anisotropy=8){
 export function surfaceUV(geometry,material,dimensions,offset=[0,0,0]){
  const kind=material.userData.surface;if(!kind)return;
  const pos=geometry.attributes.position,norm=geometry.attributes.normal,uv=geometry.attributes.uv;
- const tile=kind==='wood'?[.38,1.4]:kind==='linen'?[.32,.32]:kind==='tatami'?[.38,.38]:[1.4,1.4];
+ const tile=kind==='wood'?[.38,1.4]:kind==='linen'?[.32,.32]:kind==='tatami'?[.38,.38]:[.65,.65];
  for(let i=0;i<pos.count;i++){
   const n=[Math.abs(norm.getX(i)),Math.abs(norm.getY(i)),Math.abs(norm.getZ(i))];
   const normalAxis=!geometry.index&&geometry.groups.length===6?Math.floor(i/(pos.count/6)/2):n.indexOf(Math.max(...n));let axes=[0,1,2].filter(a=>a!==normalAxis);
