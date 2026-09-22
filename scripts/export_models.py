@@ -1,6 +1,5 @@
 """Export lightweight copies of the existing lamp assemblies; never change source files."""
 import bpy,json,math,hashlib,sys
-import numpy as np
 from pathlib import Path
 from mathutils import Matrix,Vector,Euler
 ROOT=Path(__file__).resolve().parents[2]/'Lamparas LED'
@@ -20,32 +19,9 @@ def mesh_for(p):
  else:bpy.ops.wm.stl_import(filepath=path)
  obj=bpy.context.object
  bpy.context.view_layer.objects.active=obj
- count=len(obj.data.polygons)
- if count>18000 and p['name']!='S01_Pantalla_Rosca':
-  mod=obj.modifiers.new('Web simplification','DECIMATE');mod.ratio=18000/count
-  bpy.ops.object.modifier_apply(modifier=mod.name)
  obj.data.transform(Matrix.Scale(.001,4))
  for face in obj.data.polygons:face.use_smooth=True
  obj.data.set_sharp_from_angle(angle=math.radians(35))
- # Preserve the exact shade silhouette but filter subpixel rib normals.
- # Print meshes contain fine corrugation whose normals alias in a browser.
- if p['name']=='S01_Pantalla_Rosca':
-  mesh=obj.data
-  coords=np.empty(len(mesh.vertices)*3,dtype=np.float64)
-  mesh.vertices.foreach_get('co',coords);coords=coords.reshape(-1,3)
-  radii=np.linalg.norm(coords[:,:2],axis=1)
-  z=coords[:,2];step=.0005;zmin=z.min();bins=np.floor((z-zmin)/step).astype(int)
-  profile=np.zeros(bins.max()+1);np.maximum.at(profile,bins,radii)
-  known=np.flatnonzero(profile);profile=np.interp(np.arange(len(profile)),known,profile[known])
-  profile=np.convolve(np.pad(profile,4,mode='edge'),np.ones(9)/9,mode='valid')
-  slope=np.gradient(profile,step)
-  normals=np.column_stack((coords[:,0]/np.maximum(radii,1e-8),coords[:,1]/np.maximum(radii,1e-8),-slope[bins]))
-  normals/=np.linalg.norm(normals,axis=1)[:,None]
-  old=np.empty(len(mesh.vertices)*3,dtype=np.float64);mesh.vertices.foreach_get('normal',old);old=old.reshape(-1,3)
-  interior=(old[:,:2]*coords[:,:2]).sum(axis=1)<0
-  normals[interior]*=-1
-  for edge in mesh.edges:edge.use_edge_sharp=False
-  mesh.normals_split_custom_set_from_vertices(normals.tolist())
  mesh=obj.data;cache[path]=mesh;bpy.data.objects.remove(obj,do_unlink=True)
  return mesh
 configs=[('andon','Revision_v03','01_Andon_Frame'),('toro','Revision_v03','03_Toro_Stack'),('shoji','Revision_v03','04_Shoji_Wall'),('pebble','Pebble_Pared_Gruesa_v10','01_Pebble_Jardin'),('pebble-compact','Pebble_Pared_Gruesa_v10','02_Pebble_Compacta'),('shibui','SHIBUI_Rosca_025','SHIBUI_Individual'),('shibui-stack','SHIBUI_Rosca_025','SHIBUI_Stack_2_LED')]

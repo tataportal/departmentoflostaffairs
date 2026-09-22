@@ -37,7 +37,7 @@ npm run preview
 - Pebble jardín y compacta: `Lamparas LED/Pebble_Pared_Gruesa_v10`.
 - SHIBUI individual y apilada: `Lamparas LED/SHIBUI_Rosca_025`.
 
-Los exportadores solo crean copias para presentación web; no modifican los archivos originales de impresión. Se omiten herrajes internos y tornillos ocultos. Los GLB de SHIBUI omiten la pantalla de impresión; para visualización se reconstruye su pantalla por una superficie de revolución derivada del perfil radial real (`src/shibui-profile.json`). Se filtran las ondulaciones subpíxel y se representa el relieve mediante una textura con mipmaps; así desaparece el punteado de la malla de impresión en los primeros planos iluminados. La copia web mantiene el perfil y las posiciones del ensamblaje; no es una malla para imprimir. `scripts/build_shibui_profile.py` regenera este perfil desde el OBJ fuente.
+Los exportadores crean copias GLB de las piezas originales, conservando geometría, costillas, aberturas y posiciones de ensamblaje. No se aplican decimación ni pantallas reconstruidas. Meshopt comprime los datos para la web sin reducir la topología. Los originales de impresión permanecen intactos. Se omiten cassettes y tornillos ocultos. La pantalla de SHIBUI proviene directamente de `S01_Pantalla_Rosca.obj`, junto con su base, remate y acoples reales.
 
 Regenerar desde la raíz del proyecto web (requiere Blender):
 

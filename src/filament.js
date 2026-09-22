@@ -4,9 +4,9 @@ import * as THREE from 'three';
 // The internal-light term is an approximation, not a volumetric path tracer.
 export function createFilament(source,bounds){
  const material=new THREE.MeshPhysicalMaterial({
-  name:'diffuser',color:0xf5f5f2,roughness:.48,metalness:0,
+  name:'diffuser',color:0xf5f5f2,roughness:source.userData.ribbed?.64:.48,metalness:0,
   ior:1.46,specularIntensity:.65,clearcoat:.08,clearcoatRoughness:.55,
-  transmission:.08,thickness:.0012,attenuationColor:0xf3eee5,attenuationDistance:.018,
+  transmission:source.userData.ribbed?0:.08,thickness:.0012,attenuationColor:0xf3eee5,attenuationDistance:.018,
   bumpMap:source.bumpMap,bumpScale:source.bumpScale||.00006,
   emissive:0xffffff,emissiveIntensity:0,side:THREE.FrontSide
  });
@@ -16,6 +16,7 @@ export function createFilament(source,bounds){
   shader.vertexShader='varying vec3 shellWorld;\n'+shader.vertexShader;
   shader.vertexShader=shader.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n shellWorld=(modelMatrix*vec4(transformed,1.0)).xyz;');
   shader.fragmentShader='varying vec3 shellWorld; uniform vec3 shellCenter; uniform vec3 shellSize;\n'+shader.fragmentShader;
+  if(source.userData.ribbed)shader.fragmentShader=shader.fragmentShader.replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n reflectedLight.directDiffuse*=0.22; reflectedLight.directSpecular*=0.3;');
   shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`#include <emissivemap_fragment>
    vec3 shellP=(shellWorld-shellCenter)/max(shellSize,vec3(0.001));
    float facing=abs(dot(normal,normalize(vViewPosition)));
@@ -24,6 +25,6 @@ export function createFilament(source,bounds){
    totalEmissiveRadiance*=scattering;
   `);
  };
- material.customProgramCacheKey=()=> 'milky-pla-v1';
+ material.customProgramCacheKey=()=> source.userData.ribbed?'ribbed-pla-v2':'milky-pla-v1';
  return material;
 }

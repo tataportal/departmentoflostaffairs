@@ -13,7 +13,6 @@ import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
 import {VignetteShader} from 'three/addons/shaders/VignetteShader.js';
 import {RectAreaLightUniformsLib} from 'three/addons/lights/RectAreaLightUniformsLib.js';
 import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
-import {replaceShibuiSurface} from './shibui-surface.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {createFilament} from './filament.js';
 import {createFocusPass,createDust} from './atmosphere.js';
@@ -68,7 +67,7 @@ function focus(id,animate=true){
  const portrait=innerWidth/innerHeight<.85;
  const span=({toro:.72,'shibui-stack':.49,shibui:.28,shoji:.45,pebble:.32,'pebble-compact':.26})[id]||.44;
  // Raise view target slightly downward to put the lamp above the bottom controls.
- orbitYaw=0;orbitPitch=id.startsWith('pebble')?.4:.12;
+ orbitYaw=0;orbitPitch=id.startsWith('pebble')?.4:id.startsWith('shibui')?.34:.12;
  const direction=new THREE.Vector3(0,Math.sin(orbitPitch),Math.cos(orbitPitch));
  const target=center.clone();target.y-=portrait?span*.06:span*.09;
  transition(target,direction.multiplyScalar(4),span*(portrait?1.28:1),animate);
@@ -194,14 +193,15 @@ async function init(){
  const loader=new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
  await Promise.all(LAMPS.map(async(def)=>{
   const gltf=await loader.loadAsync(`${import.meta.env.BASE_URL}models/${def.id}.glb`);
-  const group=gltf.scene;if(def.id.startsWith('shibui'))replaceShibuiSurface(group,def.id);group.position.set(...def.position);scene.add(group);
+  const group=gltf.scene;group.position.set(...def.position);scene.add(group);
   group.updateMatrixWorld(true);
   const diffusers=[],stoneBounds=new THREE.Box3();
   group.traverse(obj=>{if(!obj.isMesh)return;obj.userData.lampId=def.id;obj.castShadow=true;obj.receiveShadow=true;obj.material=obj.material.clone();
    if(obj.material.name==='diffuser'){if(def.id.startsWith('pebble'))stoneBounds.expandByObject(obj);obj.castShadow=false;obj.receiveShadow=false;obj.material.side=THREE.FrontSide;obj.material.roughness=.72;
     const shellBounds=new THREE.Box3().setFromObject(obj);
+    if(def.id.startsWith('shibui'))obj.material.userData.ribbed=true;
     obj.material=createFilament(obj.material,shellBounds);
-    diffusers.push(obj.material);}else{obj.material.roughness=.58;obj.material.metalness=0;if(def.id.startsWith('shibui')){obj.material.color.set('#f5f5f2');obj.material.roughness=.72;}}
+    diffusers.push(obj.material);}else{obj.material.roughness=.58;obj.material.metalness=0;if(def.id.startsWith('shibui')){obj.material.roughness=.42;}}
   });
   const bounds=new THREE.Box3().setFromObject(group),anchor=bounds.getCenter(new THREE.Vector3());
   if(def.id==='toro')anchor.y=def.position[1]+1.05;
