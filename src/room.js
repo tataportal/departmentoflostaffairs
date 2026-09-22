@@ -53,20 +53,21 @@ export async function createRoom(scene,renderer){
   const mesh=new THREE.Mesh(geometry,m);mesh.position.set(x,y,z);mesh.castShadow=true;mesh.receiveShadow=true;room.add(mesh);return mesh;
  }
 
- // Floating, open-front architectural model. Dimensions are metres.
- box(3.65,.2,3.45,0,-.025,0,edge,.025);
- for(let i=0;i<24;i++)box(.147,.06,3.35,-1.725+i*.15,.1,0,i%4===0?dark:wood);
- box(3.67,.035,.055,0,.138,1.7,dark);
- box(.055,.035,3.45,1.805,.138,0,dark);
- // Walls end at the open edges. Framing is exposed in the cutaway.
- box(.095,2.04,3.35,-1.77,1.13,0,wall);
- box(3.57,2.04,.095,0,1.13,-1.63,wall);
- for(const z of [-1.61,-.55,.55,1.63])box(.11,2.12,.11,-1.7,1.15,z,dark);
- for(const x of [-1.7,-.8,.12,1.73])box(.10,2.12,.12,x,1.15,-1.57,dark);
- box(.14,.12,3.42,-1.7,2.19,0,dark);
- box(3.52,.12,.16,.015,2.19,-1.57,dark);
- box(3.48,.13,.1,0,.19,-1.54,dark);
- box(.1,.13,3.25,-1.69,.19,0,dark);
+ // A deeper entry apron leaves circulation space around the existing furniture.
+ // Extend the architecture toward the open doorway; keep every object in place.
+ box(4.25,.2,3.90,.30,-.025,.225,edge,.025);
+ for(let i=0;i<28;i++)box(.147,.06,3.80,-1.725+i*.15,.1,.225,i%4===0?dark:wood);
+ box(4.27,.035,.055,.30,.138,2.15,dark);
+ box(.055,.035,3.90,2.405,.138,.225,dark);
+ // Walls and beams follow the enlarged perimeter.
+ box(.095,2.04,3.80,-1.77,1.13,.225,wall);
+ box(4.17,2.04,.095,.30,1.13,-1.63,wall);
+ for(const z of [-1.61,-.55,.55,2.08])box(.11,2.12,.11,-1.7,1.15,z,dark);
+ for(const x of [-1.7,-.8,.12,1.73,2.33])box(.10,2.12,.12,x,1.15,-1.57,dark);
+ box(.14,.12,3.87,-1.7,2.19,.225,dark);
+ box(4.12,.12,.16,.315,2.19,-1.57,dark);
+ box(4.08,.13,.1,.30,.19,-1.54,dark);
+ box(.1,.13,3.70,-1.69,.19,.225,dark);
  // Recessed shoji window across the right half of the back wall.
  box(1.35,1.38,.032,.92,1.36,-1.565,paper);
  for(let i=0;i<7;i++)box(.019,1.43,.028,.26+i*.22,1.36,-1.535,dark);

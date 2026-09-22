@@ -65,7 +65,11 @@ function orbitProduct(){
  const distance=4;camera.position.set(aim.x+Math.sin(orbitYaw)*Math.cos(orbitPitch)*distance,aim.y+Math.sin(orbitPitch)*distance,aim.z+Math.cos(orbitYaw)*Math.cos(orbitPitch)*distance);camera.lookAt(aim);dirty=true;requestFrame();
 }
 const aim=new THREE.Vector3(),homeAim=new THREE.Vector3(0,.86,0),homeOffset=new THREE.Vector3(6,4.8,6);
-let homeSpan=5.2;
+// Eye-level threshold view: enough setback to read the whole room.
+const entryAim=new THREE.Vector3(-.45,.95,-.25);
+const entryOffset=new THREE.Vector3(3.15,.65,2.55);
+function entryFov(aspect){return THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(30))*Math.max(1,1.3/aspect)));}
+let homeSpan=5.7;
 const raycaster=new THREE.Raycaster();
 const pointer=new THREE.Vector2();
 const projected=new THREE.Vector3();
@@ -76,8 +80,8 @@ function showError(error){introTimers.forEach(clearTimeout);sound.stopSignature(
 function fit(){
  const w=innerWidth,h=innerHeight,aspect=w/h;
  renderer.setSize(w,h);composer.setSize(w,h);
- if(entryCamera){entryCamera.aspect=aspect;entryCamera.updateProjectionMatrix();}
- homeSpan=Math.max(5.25,5.8/aspect);
+ if(entryCamera){entryCamera.aspect=aspect;if(!cameraTravel)entryCamera.fov=entryFov(aspect);entryCamera.updateProjectionMatrix();}
+ homeSpan=Math.max(5.7,6.5/aspect);
  camera.left=-aspect/2;camera.right=aspect/2;camera.top=.5;camera.bottom=-.5;
  animation=null;if(selected)focus(selected,false);else{camera.zoom=1/homeSpan;camera.position.copy(homeAim).add(homeOffset);aim.copy(homeAim);camera.lookAt(aim);}
  camera.updateProjectionMatrix();dirty=true;requestFrame();
@@ -190,11 +194,11 @@ function render(time){
  if(cameraTravel){
   const t=THREE.MathUtils.clamp((time-cameraTravel.start)/cameraTravel.duration,0,1);
   const e=t*t*t*(t*(t*6-15)+10);
-  const povAim=new THREE.Vector3(-1.65,1.28,-.04),povOffset=new THREE.Vector3(2.5,.02,.16);
+  const povAim=entryAim.clone(),povOffset=entryOffset.clone();
   const distance=povOffset.length()*Math.pow(120/povOffset.length(),e);
   const direction=povOffset.clone().normalize().lerp(homeOffset.clone().normalize(),e).normalize();
   const target=povAim.lerp(homeAim,e);
-  const startSpan=2*povOffset.length()*Math.tan(THREE.MathUtils.degToRad(50/2));
+  const startSpan=2*povOffset.length()*Math.tan(THREE.MathUtils.degToRad(entryFov(entryCamera.aspect)/2));
   const span=THREE.MathUtils.lerp(startSpan,homeSpan,e);
   entryCamera.position.copy(target).addScaledVector(direction,distance);
   entryCamera.fov=THREE.MathUtils.radToDeg(2*Math.atan(span/(2*distance)));
@@ -316,8 +320,8 @@ async function init(){
  $('loading').hidden=true;
  document.body.classList.add('introducing');$('enter').hidden=false;$('enter').disabled=false;$('targets').inert=true;
  $('targets').hidden=true;
- entryCamera=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,.08,12);entryCamera.layers.enable(1);
- entryCamera.position.set(.85,1.30,.12);entryCamera.lookAt(-1.65,1.28,-.04);
+ entryCamera=new THREE.PerspectiveCamera(entryFov(innerWidth/innerHeight),innerWidth/innerHeight,.08,14);entryCamera.layers.enable(1);
+ entryCamera.position.copy(entryAim).add(entryOffset);entryCamera.lookAt(entryAim);
  scenePass.camera=entryCamera;contactPass.enabled=false;
  window.addEventListener('resize',fit);
  document.addEventListener('visibilitychange',()=>{if(document.hidden&&introPhase==='playing')finishIntro();if(!document.hidden){lastRender=0;dirty=true;requestFrame();}});
