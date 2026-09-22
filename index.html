@@ -9,10 +9,12 @@
 <button id="back" hidden aria-label="Volver a la sala">←</button>
 <p id="hint" hidden></p>
 <section id="controls" hidden aria-labelledby="lamp-name">
-<div class="panel-heading"><button id="previous" aria-label="Lámpara anterior">‹</button><div><p id="lamp-kind" hidden></p><h1 id="lamp-name"></h1><p id="lamp-price" hidden></p></div><button id="next" aria-label="Lámpara siguiente">›</button></div><div class="light-controls"><button id="power" role="switch" aria-checked="true" aria-label="Encender lámpara"><span class="switch-track"><span></span></span><span id="power-label" hidden>Encendida</span></button>
+<div class="panel-heading"><button id="previous" aria-label="Lámpara anterior">‹</button><div><p id="lamp-kind" hidden></p><h1 id="lamp-name"></h1><p id="lamp-tagline"></p><p id="lamp-price" hidden></p></div><button id="next" aria-label="Lámpara siguiente">›</button></div><div class="light-controls"><button id="power" role="switch" aria-checked="true" aria-label="Encender lámpara"><span class="switch-track"><span></span></span><span id="power-label" hidden>Encendida</span></button>
 <div class="temperatures" role="group" aria-label="Temperatura de luz"><button data-temp="warm" aria-pressed="true"><i class="warm"></i>Cálida</button><button data-temp="neutral" aria-pressed="false"><i class="neutral"></i>Neutra</button><button data-temp="cool" aria-pressed="false"><i class="cool"></i>Fría</button></div></div>
+<button id="story-open" aria-expanded="false" aria-controls="piece-story">La pieza <span aria-hidden="true">↗</span></button>
 <p id="save-status" class="sr-only" role="status"></p>
 </section>
+<aside id="piece-story" hidden aria-labelledby="story-title"><button id="story-close" aria-label="Cerrar historia de la pieza">×</button><p id="story-name"></p><h2 id="story-title"></h2><p id="story-text"></p></aside>
 <button id="enter" hidden aria-label="Entrar a la sala e iniciar la secuencia de luz">Entrar <span aria-hidden="true">↗</span></button>
 <button id="sound" aria-pressed="true" aria-label="Silenciar sonidos"></button>
 <nav class="brand-nav" aria-label="Department of Lost Affairs">

@@ -1,3 +1,4 @@
+import {storyFor} from './stories.js';
 import './style.css';
 import speakerOn from '@phosphor-icons/core/assets/regular/speaker-high.svg?raw';
 import speakerOff from '@phosphor-icons/core/assets/regular/speaker-slash.svg?raw';
@@ -99,6 +100,7 @@ function selectLamp(id){
  announce(`${models.find(m=>m.id===id).name}. Controles de luz abiertos.`);
 }
 function back(){
+ closeStory(false);
  const previous=selected;selected=null;document.body.classList.remove('focused');
  $('controls').hidden=true;$('back').hidden=true;$('hint').hidden=false;$('targets').hidden=false;
  transition(homeAim,homeOffset,homeSpan);
@@ -107,6 +109,11 @@ function back(){
 function updatePanel(){
  if(!selected)return;
  const item=LAMPS.find(m=>m.id===selected),s=state[selected];
+ const story=storyFor(selected);
+ $('lamp-tagline').textContent=story.title;
+ $('story-name').textContent=item.name;
+ $('story-title').textContent=story.title;
+ $('story-text').textContent=story.text;
  $('lamp-name').textContent=item.name;$('lamp-kind').textContent=item.kind;
  $('lamp-price').hidden=!Number.isFinite(item.priceUSD);
  $('lamp-price').textContent=Number.isFinite(item.priceUSD)?`US$ ${item.priceUSD}`:'';
@@ -294,3 +301,17 @@ for(const dialog of document.querySelectorAll('.brand-dialog')){
  dialog.querySelector('.dialog-close').onclick=()=>dialog.close();
  dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close();}});
 }
+
+function closeStory(restoreFocus=true){
+ $('piece-story').hidden=true;$('story-open').setAttribute('aria-expanded','false');
+ if(restoreFocus)$('story-open').focus({preventScroll:true});
+}
+$('story-open').onclick=()=>{
+ const opening=$('piece-story').hidden;
+ $('piece-story').hidden=!opening;$('story-open').setAttribute('aria-expanded',String(opening));
+ if(opening)$('story-close').focus({preventScroll:true});
+};
+$('story-close').onclick=()=>closeStory();
+window.addEventListener('keydown',event=>{
+ if(event.key==='Escape'&&!$('piece-story').hidden){event.stopImmediatePropagation();closeStory();}
+},true);
