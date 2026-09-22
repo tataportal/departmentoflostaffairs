@@ -15,7 +15,7 @@ import {RectAreaLightUniformsLib} from 'three/addons/lights/RectAreaLightUniform
 import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {createFilament} from './filament.js';
-import {createFocusPass,createDust} from './atmosphere.js';
+import {createDust} from './atmosphere.js';
 import {createSound} from './sound.js';
 import {createRoom} from './room.js';
 import {LAMPS,TEMPERATURES,loadState,saveState,STORAGE_KEY} from './state.js';
@@ -29,9 +29,8 @@ updateSound();
 $('sound').onclick=()=>{sound.toggle();updateSound();if(sound.enabled)sound.play(selected,'select');};
 const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)');
 let selected=null,models=[],animation=null,lighting=null,frame=0,dirty=true;
-let camera,renderer,composer,scene,dof,dust;
+let camera,renderer,composer,scene,dust;
 let dustTime=0,lastRender=0;
-const focusPoint=new THREE.Vector3();
 let orbitYaw=0,orbitPitch=.12,drag=null;
 function orbitProduct(){
  const distance=4;camera.position.set(aim.x+Math.sin(orbitYaw)*Math.cos(orbitPitch)*distance,aim.y+Math.sin(orbitPitch)*distance,aim.z+Math.cos(orbitYaw)*Math.cos(orbitPitch)*distance);camera.lookAt(aim);dirty=true;requestFrame();
@@ -156,10 +155,6 @@ function render(time){
  if(drifting){dustTime+=Math.min(lastRender?(time-lastRender)/1000:0,.05);dirty=true;}
  lastRender=time;
  if(dirty){
-  const item=models.find(m=>m.id===selected);
-  dof.enabled=Boolean(item);
-  if(item){camera.updateMatrixWorld();focusPoint.copy(item.anchor).applyMatrix4(camera.matrixWorldInverse);dof.uniforms.focus.value=-focusPoint.z;
-   dof.uniforms.aperture.value=.035*THREE.MathUtils.smoothstep(camera.zoom,.3,1.05);}
   dust?.update(dustTime,selected,renderer.getPixelRatio());
   composer.render();updateTargets();dirty=false;
  }
@@ -178,7 +173,6 @@ async function init(){
  const contact=new SSAOPass(scene,camera,innerWidth,innerHeight,12);
  contact.kernelRadius=.12;contact.minDistance=.00015;contact.maxDistance=.009;
  composer.addPass(contact);
- dof=createFocusPass(scene,camera);composer.addPass(dof);
  composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.14,.55,1.2));
  composer.addPass(new OutputPass());composer.addPass(new SMAAPass());
  const vignette=new ShaderPass(VignetteShader);vignette.uniforms.offset.value=.72;vignette.uniforms.darkness.value=1;composer.addPass(vignette);

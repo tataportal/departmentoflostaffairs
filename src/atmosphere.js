@@ -1,19 +1,4 @@
 import * as THREE from 'three';
-import {BokehPass} from 'three/addons/postprocessing/BokehPass.js';
-
-export function createFocusPass(scene,camera){
- const pass=new BokehPass(scene,camera,{focus:4,aperture:.035,maxblur:.012});
- pass.materialBokeh.defines.PERSPECTIVE_CAMERA=0;
- pass.materialBokeh.fragmentShader=pass.materialBokeh.fragmentShader.replace(
-  'float factor = ( focus + viewZ );',
-  'float delta = focus + viewZ; float factor = sign(delta) * max(0.0, abs(delta) - 0.12);'
- );
- // Dust must not write solid point squares into the depth buffer.
- const render=pass.render.bind(pass);
- pass.render=(...args)=>{const mask=camera.layers.mask;camera.layers.disable(1);try{render(...args);}finally{camera.layers.mask=mask;}};
- pass.enabled=false;
- return pass;
-}
 
 export function createDust(scene,models){
  const clouds=models.map((item,index)=>{

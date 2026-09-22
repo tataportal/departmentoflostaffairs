@@ -58,4 +58,4 @@ Pruebas automatizadas: restauración de estados independientes, recuperación de
 
 ## Atmósfera
 
-Los acercamientos usan profundidad de campo con distancia de enfoque calculada sobre la lámpara seleccionada y una zona nítida alrededor del modelo. La vista general permanece nítida. Las motas de polvo flotan despacio alrededor de las luces encendidas y heredan su temperatura. El movimiento se detiene con movimiento reducido o al ocultar la pestaña; en reposo se limita a 30 fps.
+La vista general y los acercamientos permanecen nítidos, sin profundidad de campo. Las motas de polvo flotan despacio alrededor de las luces encendidas y heredan su temperatura. El movimiento se detiene con movimiento reducido o al ocultar la pestaña; en reposo se limita a 30 fps.
