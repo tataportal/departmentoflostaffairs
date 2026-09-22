@@ -44,13 +44,13 @@ function startIntro(){
  introTimers.push(setTimeout(()=>{
   $('enter').hidden=true;document.body.classList.remove('awaiting-entry','door-opening');
   if(reduceMotion.matches){scenePass.camera=camera;contactPass.enabled=true;}
-  else cameraTravel={start:performance.now()+1000,duration:2700};
+  else cameraTravel={start:performance.now()+3500,duration:2700};
   dirty=true;requestFrame();
  },openingDuration));
  introOrder.forEach((id,i)=>introTimers.push(setTimeout(()=>{
   introLit.add(id);sound.signatureNote(i);applyLights();
- },openingDuration+180+i*480)));
- introTimers.push(setTimeout(finishIntro,openingDuration+4800));
+ },(reduceMotion.matches?0:450)+i*480)));
+ introTimers.push(setTimeout(finishIntro,reduceMotion.matches?4800:8000));
 }
 $('enter').onclick=startIntro;
 function updateSound(){ $('sound').setAttribute('aria-pressed',String(sound.enabled)); $('sound').setAttribute('aria-label',sound.enabled?'Mute sound':'Enable sound'); $('sound').innerHTML=sound.enabled?speakerOn:speakerOff; $('sound').querySelector('svg').setAttribute('aria-hidden','true'); }
@@ -190,14 +190,17 @@ function render(time){
  if(cameraTravel){
   const t=THREE.MathUtils.clamp((time-cameraTravel.start)/cameraTravel.duration,0,1);
   const e=t*t*t*(t*(t*6-15)+10);
-  const povAim=new THREE.Vector3(0,1,-.6),povOffset=new THREE.Vector3(.55,.35,2.08);
-  const distance=THREE.MathUtils.lerp(povOffset.length(),200,e);
+  const povAim=new THREE.Vector3(-1.65,1.28,-.04),povOffset=new THREE.Vector3(2.5,.02,.16);
+  const distance=povOffset.length()*Math.pow(120/povOffset.length(),e);
   const direction=povOffset.clone().normalize().lerp(homeOffset.clone().normalize(),e).normalize();
   const target=povAim.lerp(homeAim,e);
-  const startSpan=2*povOffset.length()*Math.tan(THREE.MathUtils.degToRad(65/2));
+  const startSpan=2*povOffset.length()*Math.tan(THREE.MathUtils.degToRad(50/2));
   const span=THREE.MathUtils.lerp(startSpan,homeSpan,e);
   entryCamera.position.copy(target).addScaledVector(direction,distance);
   entryCamera.fov=THREE.MathUtils.radToDeg(2*Math.atan(span/(2*distance)));
+  // Tight clipping range preserves depth precision as the lens becomes orthographic.
+  // The old .02–2000 range made nearby surfaces fight during the pullback.
+  entryCamera.near=Math.max(.08,distance-6);entryCamera.far=distance+7;
   entryCamera.lookAt(target);entryCamera.updateProjectionMatrix();dirty=true;
   if(t===1){cameraTravel=null;scenePass.camera=camera;contactPass.enabled=true;}
  }
@@ -313,8 +316,8 @@ async function init(){
  $('loading').hidden=true;
  document.body.classList.add('introducing');$('enter').hidden=false;$('enter').disabled=false;$('targets').inert=true;
  $('targets').hidden=true;
- entryCamera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.02,2000);entryCamera.layers.enable(1);
- entryCamera.position.set(.55,1.35,1.48);entryCamera.lookAt(0,1,-.6);
+ entryCamera=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,.08,12);entryCamera.layers.enable(1);
+ entryCamera.position.set(.85,1.30,.12);entryCamera.lookAt(-1.65,1.28,-.04);
  scenePass.camera=entryCamera;contactPass.enabled=false;
  window.addEventListener('resize',fit);
  document.addEventListener('visibilitychange',()=>{if(document.hidden&&introPhase==='playing')finishIntro();if(!document.hidden){lastRender=0;dirty=true;requestFrame();}});
