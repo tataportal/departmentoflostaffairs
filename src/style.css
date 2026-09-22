@@ -59,8 +59,29 @@
 .awaiting-entry .brand-signature{top:52px;left:52px;font-size:clamp(16px,1.75vw,28px);letter-spacing:.22em;line-height:1.55;gap:0;font-weight:300;text-shadow:none}
 .awaiting-entry .brand-signature:after{content:"";display:block;width:46px;height:1px;background:#eee9dc70;margin-top:23px}
 #enter{bottom:54px;width:260px;display:flex;justify-content:space-between;align-items:center;padding:17px 0;background:none;border:0;border-top:1px solid #eee9dc70;border-bottom:1px solid #eee9dc35;border-radius:0;font-size:10px;letter-spacing:.16em;transition:border-color .25s,color .25s}
-#enter:hover{background:none;border-color:#eee9dc;color:#fff}#enter span{font-size:18px;font-weight:300;transition:transform .25s}#enter:hover span{transform:translate(3px,-3px)}
+#enter:hover{background:none;border-color:#eee9dc;color:#fff}#enter span{font-size:18px;font-weight:300;transition:transform .25s}
 .awaiting-entry .brand-nav{left:52px;bottom:38px}.awaiting-entry #sound{right:42px;bottom:30px;background:none;border:0;backdrop-filter:none}
 #loading{background:#101311;gap:20px}#loading p{font:9px "SFMono-Regular",Consolas,monospace;letter-spacing:.16em;text-transform:uppercase;color:#b6b7a9}.loading-orb{width:100px;height:1px;border-radius:0;box-shadow:none;background:#e4dfce;animation:breathe 1.6s ease-in-out infinite}
 @media(max-width:700px){.awaiting-entry .brand-signature{top:32px;left:26px;font-size:18px;letter-spacing:.17em}.awaiting-entry .brand-signature:after{margin-top:15px;width:30px}#enter{bottom:88px;width:calc(100% - 52px);max-width:300px}.awaiting-entry .brand-nav{left:26px;bottom:28px}.awaiting-entry #sound{right:18px;bottom:19px}}
 @media(max-height:550px) and (min-width:701px){.awaiting-entry .brand-signature{top:24px;left:28px;font-size:16px}#enter{bottom:32px;width:220px}.awaiting-entry .brand-nav{left:28px;bottom:24px}}
+
+/* Full-height shoji threshold: the two leaves themselves are the entry control. */
+#enter.shoji-entry{position:absolute;inset:0;width:100%;max-width:none;height:100%;padding:0;transform:none;border:0;border-radius:0;background:#17150f;z-index:7;display:block;overflow:hidden;cursor:pointer;perspective:1000px;text-transform:none;letter-spacing:normal}
+#enter.shoji-entry:hover{background:#17150f;border:0}
+#enter.shoji-entry:focus-visible{outline:1px solid #eee2bc;outline-offset:-12px}
+#enter .shoji-leaf{position:absolute;top:0;bottom:0;width:50%;margin:0;display:block;background:#493420 url('./../public/textures/pbr/wood_table_001_Diffuse.jpg') center/240px 100%;border:14px solid #39281d;border-top-width:22px;border-bottom-width:26px;box-shadow:inset 0 0 0 1px #bda17b44,0 0 25px #0009;transition:transform 1.45s cubic-bezier(.65,0,.25,1);will-change:transform}
+#enter .shoji-left{left:0;border-right-width:22px}#enter .shoji-right{right:0;border-left-width:22px}
+#enter .shoji-paper{position:absolute;inset:0;margin:0;background:radial-gradient(ellipse at 70% 65%,#eee4c7 0%,#d8cfb3 45%,#b5ac92 100%);box-shadow:inset 0 0 32px #34281255}
+#enter .shoji-paper:after{content:"";position:absolute;inset:0;opacity:.22;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%2365533c' filter='url(%23n)' opacity='.6' d='M0 0h220v220H0z'/%3E%3C/svg%3E")}
+#enter .shoji-lattice{position:absolute;inset:0;margin:0;background-image:linear-gradient(to right,#312216 0px,#644a32 3px,#493220 8px,transparent 9px),linear-gradient(to bottom,#302115 0px,#634830 3px,#493220 8px,transparent 9px);background-size:25% 100%,100% 20%;filter:drop-shadow(2px 3px 2px #30231360)}
+#enter .shoji-handle{position:absolute;top:53%;width:9px;height:62px;border:1px solid #9e82614d;background:#1d1713;margin:0;box-shadow:inset 2px 1px 5px #0008;border-radius:1px}
+#enter .shoji-left .shoji-handle{right:-16px}#enter .shoji-right .shoji-handle{left:-16px}
+#enter .door-sign{position:absolute;left:7%;top:8%;margin:0;padding:19px 22px;color:#29261f;background:#e7e0cd;box-shadow:0 2px 5px #20190e25;text-align:left}
+#enter .door-sign>span{display:block;margin:0;font:400 clamp(11px,1.1vw,17px)/1.7 system-ui,sans-serif;letter-spacing:.23em;color:inherit}
+#enter .door-sign small{display:block;margin-top:16px;font:8px "SFMono-Regular",Consolas,monospace;letter-spacing:.16em;color:#686052}
+#enter .door-invitation{position:absolute;bottom:9%;left:50%;transform:translateX(-50%);margin:0;padding:12px 18px;background:#e7e0cdeb;color:#393025;font:9px "SFMono-Regular",Consolas,monospace;letter-spacing:.16em;white-space:nowrap;transition:opacity .25s}
+#enter .door-invitation span{margin-left:20px;font-size:16px;color:inherit}#enter:hover .door-invitation span{transform:none}
+.door-opening #enter.shoji-entry{background:transparent;pointer-events:none}.door-opening #enter .shoji-left{transform:translateX(-102%)}.door-opening #enter .shoji-right{transform:translateX(102%)}.door-opening #enter .door-invitation{opacity:0}
+.awaiting-entry .brand-signature,.awaiting-entry .brand-nav{visibility:hidden}.awaiting-entry #sound{z-index:8;color:#30291e;background:#e7e0cd;border:1px solid #8d8066;bottom:35px;right:30px}
+#loading{z-index:9;background:#151812}#loading p{color:#e0dacb}
+@media(max-width:700px){#enter .shoji-leaf{border-width:10px;border-top-width:18px;border-bottom-width:20px}#enter .shoji-left{border-right-width:18px}#enter .shoji-right{border-left-width:18px}#enter .shoji-lattice{background-size:50% 100%,100% 16.6667%}#enter .door-sign{left:10px;top:7%;padding:14px 10px}#enter .door-sign>span{font-size:9px;letter-spacing:.08em}#enter .door-sign small{font-size:6px;letter-spacing:.05em}#enter .door-invitation{bottom:10%}#enter .shoji-left .shoji-handle{right:-13px}#enter .shoji-right .shoji-handle{left:-13px}}

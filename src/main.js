@@ -30,17 +30,27 @@ let introPhase='waiting',introLit=new Set(),introTimers=[];
 const introOrder=SIGNATURE_ORDER;
 function finishIntro(){
  introTimers.forEach(clearTimeout);introTimers=[];introPhase='done';
- $('enter').hidden=true;document.body.classList.remove('introducing','awaiting-entry');
+ $('enter').hidden=true;document.body.classList.remove('introducing','awaiting-entry','door-opening');
+ $('targets').inert=false;$('targets').hidden=false;
+ if(entryCamera){cameraTravel=null;scenePass.camera=camera;contactPass.enabled=true;dirty=true;}
  sound.stopSignature();applyLights();
 }
 function startIntro(){
  if(introPhase!=='waiting')return;
- introPhase='playing';$('enter').hidden=true;document.body.classList.remove('awaiting-entry');
- sound.unlock();
+ introPhase='playing';$('enter').disabled=true;
+ document.body.classList.add('door-opening');
+ sound.unlock();sound.doorSlide();
+ const openingDuration=reduceMotion.matches?0:1500;
+ introTimers.push(setTimeout(()=>{
+  $('enter').hidden=true;document.body.classList.remove('awaiting-entry','door-opening');
+  if(reduceMotion.matches){scenePass.camera=camera;contactPass.enabled=true;}
+  else cameraTravel={start:performance.now()+1000,duration:2700};
+  dirty=true;requestFrame();
+ },openingDuration));
  introOrder.forEach((id,i)=>introTimers.push(setTimeout(()=>{
   introLit.add(id);sound.signatureNote(i);applyLights();
- },180+i*480)));
- introTimers.push(setTimeout(finishIntro,4800));
+ },openingDuration+180+i*480)));
+ introTimers.push(setTimeout(finishIntro,openingDuration+4800));
 }
 $('enter').onclick=startIntro;
 function updateSound(){ $('sound').setAttribute('aria-pressed',String(sound.enabled)); $('sound').setAttribute('aria-label',sound.enabled?'Mute sound':'Enable sound'); $('sound').innerHTML=sound.enabled?speakerOn:speakerOff; $('sound').querySelector('svg').setAttribute('aria-hidden','true'); }
@@ -48,7 +58,7 @@ updateSound();
 $('sound').onclick=()=>{sound.toggle();updateSound();if(sound.enabled)sound.play(selected,'select');};
 const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)');
 let selected=null,models=[],animation=null,lighting=null,frame=0,dirty=true;
-let camera,renderer,composer,scene,dust;
+let camera,renderer,composer,scene,dust,entryCamera,scenePass,contactPass,cameraTravel=null;
 let dustTime=0,lastRender=0;
 let orbitYaw=0,orbitPitch=.12,drag=null;
 function orbitProduct(){
@@ -66,6 +76,7 @@ function showError(error){introTimers.forEach(clearTimeout);sound.stopSignature(
 function fit(){
  const w=innerWidth,h=innerHeight,aspect=w/h;
  renderer.setSize(w,h);composer.setSize(w,h);
+ if(entryCamera){entryCamera.aspect=aspect;entryCamera.updateProjectionMatrix();}
  homeSpan=Math.max(5.25,5.8/aspect);
  camera.left=-aspect/2;camera.right=aspect/2;camera.top=.5;camera.bottom=-.5;
  animation=null;if(selected)focus(selected,false);else{camera.zoom=1/homeSpan;camera.position.copy(homeAim).add(homeOffset);aim.copy(homeAim);camera.lookAt(aim);}
@@ -175,7 +186,21 @@ function requestFrame(){if(!frame&&!document.hidden)frame=requestAnimationFrame(
 function render(time){
  frame=0;
  // Idle dust is limited to 30 fps; camera and light transitions retain full cadence.
- if(!dirty&&!animation&&!lighting&&lastRender&&time-lastRender<33){requestFrame();return;}
+ if(!dirty&&!animation&&!lighting&&!cameraTravel&&lastRender&&time-lastRender<33){requestFrame();return;}
+ if(cameraTravel){
+  const t=THREE.MathUtils.clamp((time-cameraTravel.start)/cameraTravel.duration,0,1);
+  const e=t*t*t*(t*(t*6-15)+10);
+  const povAim=new THREE.Vector3(0,1,-.6),povOffset=new THREE.Vector3(.55,.35,2.08);
+  const distance=THREE.MathUtils.lerp(povOffset.length(),200,e);
+  const direction=povOffset.clone().normalize().lerp(homeOffset.clone().normalize(),e).normalize();
+  const target=povAim.lerp(homeAim,e);
+  const startSpan=2*povOffset.length()*Math.tan(THREE.MathUtils.degToRad(65/2));
+  const span=THREE.MathUtils.lerp(startSpan,homeSpan,e);
+  entryCamera.position.copy(target).addScaledVector(direction,distance);
+  entryCamera.fov=THREE.MathUtils.radToDeg(2*Math.atan(span/(2*distance)));
+  entryCamera.lookAt(target);entryCamera.updateProjectionMatrix();dirty=true;
+  if(t===1){cameraTravel=null;scenePass.camera=camera;contactPass.enabled=true;}
+ }
  if(animation){
   const t=Math.min(1,(time-animation.start)/animation.duration),e=t*t*t*(t*(t*6-15)+10);
   camera.position.lerpVectors(animation.from,animation.position,e);aim.lerpVectors(animation.fromAim,animation.aim,e);camera.zoom=THREE.MathUtils.lerp(animation.fromZoom,animation.zoom,e);
@@ -190,7 +215,7 @@ function render(time){
   dust?.update(dustTime,selected,renderer.getPixelRatio());
   composer.render();updateTargets();dirty=false;
  }
- if(animation||lighting||drifting)requestFrame();
+ if(animation||lighting||drifting||cameraTravel)requestFrame();
 }
 async function init(){
  scene=new THREE.Scene();scene.background=new THREE.Color('#16191a');
@@ -201,8 +226,8 @@ async function init(){
  renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();showError(new Error('The 3D context was lost.'));});
  camera=new THREE.OrthographicCamera(-1,1,1,-1,.02,40);camera.layers.enable(1);
  const target=new THREE.WebGLRenderTarget(innerWidth,innerHeight,{type:THREE.HalfFloatType,samples:4});
- composer=new EffectComposer(renderer,target);composer.addPass(new RenderPass(scene,camera));
- const contact=new SSAOPass(scene,camera,innerWidth,innerHeight,12);
+ composer=new EffectComposer(renderer,target);scenePass=new RenderPass(scene,camera);composer.addPass(scenePass);
+ const contact=contactPass=new SSAOPass(scene,camera,innerWidth,innerHeight,12);
  contact.kernelRadius=.045;contact.minDistance=.0001;contact.maxDistance=.003;
  composer.addPass(contact);
  composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.2,.65,1.35));
@@ -262,7 +287,7 @@ async function init(){
  for(const def of LAMPS)$('targets').append(models.find(m=>m.id===def.id).button);
  renderer.domElement.style.touchAction='none';
  renderer.domElement.addEventListener('pointerdown',e=>{
-  if(e.button!==0)return;drag={id:e.pointerId,x:e.clientX,y:e.clientY,yaw:orbitYaw,pitch:orbitPitch,moved:false};
+  if(e.button!==0||introPhase!=='done')return;drag={id:e.pointerId,x:e.clientX,y:e.clientY,yaw:orbitYaw,pitch:orbitPitch,moved:false};
   renderer.domElement.setPointerCapture(e.pointerId);
  });
  renderer.domElement.addEventListener('pointermove',e=>{
@@ -286,7 +311,11 @@ async function init(){
  fit();applyLights(false);composer.render();
  moon.shadow.autoUpdate=false;moon.shadow.needsUpdate=false;
  $('loading').hidden=true;
- document.body.classList.add('introducing');$('enter').hidden=false;
+ document.body.classList.add('introducing');$('enter').hidden=false;$('enter').disabled=false;$('targets').inert=true;
+ $('targets').hidden=true;
+ entryCamera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.02,2000);entryCamera.layers.enable(1);
+ entryCamera.position.set(.55,1.35,1.48);entryCamera.lookAt(0,1,-.6);
+ scenePass.camera=entryCamera;contactPass.enabled=false;
  window.addEventListener('resize',fit);
  document.addEventListener('visibilitychange',()=>{if(document.hidden&&introPhase==='playing')finishIntro();if(!document.hidden){lastRender=0;dirty=true;requestFrame();}});
  dirty=true;requestFrame();

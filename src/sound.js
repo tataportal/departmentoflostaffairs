@@ -45,5 +45,15 @@ export function createSound(storage){
    osc.onended=()=>{signatureVoices.delete(osc);osc.disconnect();gain.disconnect();pan.disconnect();};
   });
  }
- return {play,signatureNote,stopSignature,unlock(){try{if(enabled)initialize();}catch{}},get enabled(){return enabled;},toggle(){enabled=!enabled;if(!enabled)stopSignature();try{storage?.setItem(SOUND_KEY,enabled?'on':'off');}catch{}return enabled;}};
+ function doorSlide(){
+  if(!enabled||!ctx)return;
+  const length=.9,buffer=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*length),ctx.sampleRate);
+  const data=buffer.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*(.6+.4*Math.sin(i/ctx.sampleRate*53));
+  const source=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),gain=ctx.createGain();
+  source.buffer=buffer;filter.type='lowpass';filter.frequency.value=850;
+  const t=ctx.currentTime+.02;gain.gain.setValueAtTime(0,t);gain.gain.linearRampToValueAtTime(.13,t+.15);gain.gain.exponentialRampToValueAtTime(.0001,t+length);
+  source.connect(filter).connect(gain).connect(master);signatureVoices.add(source);source.start(t);source.stop(t+length);
+  source.onended=()=>{signatureVoices.delete(source);source.disconnect();filter.disconnect();gain.disconnect();};
+ }
+ return {play,signatureNote,stopSignature,doorSlide,unlock(){try{if(enabled)initialize();}catch{}},get enabled(){return enabled;},toggle(){enabled=!enabled;if(!enabled)stopSignature();try{storage?.setItem(SOUND_KEY,enabled?'on':'off');}catch{}return enabled;}};
 }
