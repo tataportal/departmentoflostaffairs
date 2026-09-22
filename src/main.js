@@ -13,6 +13,7 @@ import {VignetteShader} from 'three/addons/shaders/VignetteShader.js';
 import {RectAreaLightUniformsLib} from 'three/addons/lights/RectAreaLightUniformsLib.js';
 import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 import {replaceShibuiSurface} from './shibui-surface.js';
+import {createFocusPass,createDust} from './atmosphere.js';
 import {createSound} from './sound.js';
 import {createRoom} from './room.js';
 import {LAMPS,TEMPERATURES,loadState,saveState,STORAGE_KEY} from './state.js';
@@ -26,7 +27,9 @@ updateSound();
 $('sound').onclick=()=>{sound.toggle();updateSound();if(sound.enabled)sound.play(selected,'select');};
 const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)');
 let selected=null,models=[],animation=null,lighting=null,frame=0,dirty=true;
-let camera,renderer,composer,scene;
+let camera,renderer,composer,scene,dof,dust;
+let dustTime=0,lastRender=0;
+const focusPoint=new THREE.Vector3();
 const aim=new THREE.Vector3(),homeAim=new THREE.Vector3(0,.86,0),homeOffset=new THREE.Vector3(6,4.8,6);
 let homeSpan=5.2;
 const raycaster=new THREE.Raycaster();
@@ -133,6 +136,8 @@ function updateTargets(){
 function requestFrame(){if(!frame&&!document.hidden)frame=requestAnimationFrame(render);}
 function render(time){
  frame=0;
+ // Idle dust is limited to 30 fps; camera and light transitions retain full cadence.
+ if(!dirty&&!animation&&!lighting&&lastRender&&time-lastRender<33){requestFrame();return;}
  if(animation){
   const t=Math.min(1,(time-animation.start)/animation.duration),e=t*t*t*(t*(t*6-15)+10);
   camera.position.lerpVectors(animation.from,animation.position,e);aim.lerpVectors(animation.fromAim,animation.aim,e);camera.zoom=THREE.MathUtils.lerp(animation.fromZoom,animation.zoom,e);
@@ -140,8 +145,18 @@ function render(time){
   if(t===1)animation=null;
  }
  if(lighting)updateLighting(Math.min(1,(time-lighting.start)/240));
- if(dirty){composer.render();updateTargets();dirty=false;}
- if(animation||lighting)requestFrame();
+ const drifting=selected&&!reduceMotion.matches&&models.some(m=>m.light.intensity>.001);
+ if(drifting){dustTime+=Math.min(lastRender?(time-lastRender)/1000:0,.05);dirty=true;}
+ lastRender=time;
+ if(dirty){
+  const item=models.find(m=>m.id===selected);
+  dof.enabled=Boolean(item);
+  if(item){camera.updateMatrixWorld();focusPoint.copy(item.anchor).applyMatrix4(camera.matrixWorldInverse);dof.uniforms.focus.value=-focusPoint.z;
+   dof.uniforms.aperture.value=.035*THREE.MathUtils.smoothstep(camera.zoom,.3,1.05);}
+  dust?.update(dustTime,selected,renderer.getPixelRatio());
+  composer.render();updateTargets();dirty=false;
+ }
+ if(animation||lighting||drifting)requestFrame();
 }
 async function init(){
  scene=new THREE.Scene();scene.background=new THREE.Color('#16191a');
@@ -150,12 +165,13 @@ async function init(){
  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.18;
  $('scene').append(renderer.domElement);renderer.domElement.setAttribute('aria-hidden','true');
  renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();showError(new Error('Se perdió el contexto 3D.'));});
- camera=new THREE.OrthographicCamera(-1,1,1,-1,.02,40);
+ camera=new THREE.OrthographicCamera(-1,1,1,-1,.02,40);camera.layers.enable(1);
  const target=new THREE.WebGLRenderTarget(innerWidth,innerHeight,{type:THREE.HalfFloatType,samples:4});
  composer=new EffectComposer(renderer,target);composer.addPass(new RenderPass(scene,camera));
  const contact=new SSAOPass(scene,camera,innerWidth,innerHeight,12);
  contact.kernelRadius=.12;contact.minDistance=.00015;contact.maxDistance=.009;
  composer.addPass(contact);
+ dof=createFocusPass(scene,camera);composer.addPass(dof);
  composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.24,.65,1.05));
  composer.addPass(new OutputPass());
  const vignette=new ShaderPass(VignetteShader);vignette.uniforms.offset.value=.72;vignette.uniforms.darkness.value=1;composer.addPass(vignette);
@@ -192,6 +208,7 @@ async function init(){
   const button=document.createElement('button');button.className='target';button.dataset.lamp=def.id;button.innerHTML=`<span>${def.name}</span>`;button.onclick=()=>selectLamp(def.id);$('targets').append(button);
   models.push({...def,group,diffusers,light,bounce,button,bounds,anchor});
  }));
+ dust=createDust(scene,models);
  // Order keyboard navigation consistently, independent of network completion order.
  for(const def of LAMPS)$('targets').append(models.find(m=>m.id===def.id).button);
  renderer.domElement.addEventListener('pointerup',e=>{
@@ -204,7 +221,7 @@ async function init(){
  moon.shadow.autoUpdate=false;moon.shadow.needsUpdate=false;
  $('loading').hidden=true;
  window.addEventListener('resize',fit);
- document.addEventListener('visibilitychange',()=>{if(!document.hidden){dirty=true;requestFrame();}});
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden){lastRender=0;dirty=true;requestFrame();}});
  dirty=true;requestFrame();
 }
 init().catch(showError);

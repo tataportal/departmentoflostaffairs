@@ -55,3 +55,7 @@ Foley sintetizado con Web Audio, original y sin archivos externos. Madera para A
 ## Validación
 
 Pruebas automatizadas: restauración de estados independientes, recuperación de datos corruptos, almacenamiento bloqueado y ciclo de activación/silencio de sonido con siete voces distintas. Comprobación manual en navegador de carga de los siete modelos, enfoque, cambios de temperatura, apagado y persistencia tras recarga. Las luces son una representación visual, no una simulación fotométrica certificada.
+
+## Atmósfera
+
+Los acercamientos usan profundidad de campo con distancia de enfoque calculada sobre la lámpara seleccionada y una zona nítida alrededor del modelo. La vista general permanece nítida. Las motas de polvo flotan despacio alrededor de las luces encendidas y heredan su temperatura. El movimiento se detiene con movimiento reducido o al ocultar la pestaña; en reposo se limita a 30 fps.
