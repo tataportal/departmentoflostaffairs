@@ -89,6 +89,8 @@ function updatePanel(){
  if(!selected)return;
  const item=LAMPS.find(m=>m.id===selected),s=state[selected];
  $('lamp-name').textContent=item.name;$('lamp-kind').textContent=item.kind;
+ $('lamp-price').hidden=!Number.isFinite(item.priceUSD);
+ $('lamp-price').textContent=Number.isFinite(item.priceUSD)?`US$ ${item.priceUSD}`:'';
  $('power').setAttribute('aria-checked',String(s.on));$('power').setAttribute('aria-label',`${s.on?'Apagar':'Encender'} ${item.name}`);
  $('power-label').textContent=s.on?'Encendida':'Apagada';
  for(const b of temperatureButtons)b.setAttribute('aria-pressed',String(b.dataset.temp===s.temperature));

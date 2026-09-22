@@ -1,6 +1,7 @@
 <!doctype html>
-<html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/><meta name="theme-color" content="#16191a"/><meta name="description" content="Explora nuestra sala de lámparas. Enciende cada modelo y encuentra tu luz."/><link rel="icon" href="data:,"/><title>La sala · Lámparas</title></head><body>
+<html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/><meta name="theme-color" content="#16191a"/><meta name="description" content="Department of Lost Affairs. Objetos de luz: explora los modelos, temperaturas y precios en nuestra sala."/><link rel="icon" href="data:,"/><title>Department of Lost Affairs · Objects</title></head><body>
 <main id="app" aria-label="Sala interactiva de lámparas">
+<div class="brand-signature" aria-label="Department of Lost Affairs"><span>DEPARTMENT OF</span><span>LOST AFFAIRS</span></div>
 <div id="scene" aria-label="Vista tridimensional de la sala"></div>
 <div id="targets" aria-label="Seleccionar una lámpara"></div>
 <div id="loading" role="status"><span class="loading-orb"></span><p>Preparando la sala</p></div>
@@ -8,7 +9,7 @@
 <button id="back" hidden aria-label="Volver a la sala">←</button>
 <p id="hint" hidden></p>
 <section id="controls" hidden aria-labelledby="lamp-name">
-<div class="panel-heading"><button id="previous" aria-label="Lámpara anterior">‹</button><div><p id="lamp-kind" hidden></p><h1 id="lamp-name"></h1></div><button id="next" aria-label="Lámpara siguiente">›</button></div><div class="light-controls"><button id="power" role="switch" aria-checked="true" aria-label="Encender lámpara"><span class="switch-track"><span></span></span><span id="power-label" hidden>Encendida</span></button>
+<div class="panel-heading"><button id="previous" aria-label="Lámpara anterior">‹</button><div><p id="lamp-kind" hidden></p><h1 id="lamp-name"></h1><p id="lamp-price" hidden></p></div><button id="next" aria-label="Lámpara siguiente">›</button></div><div class="light-controls"><button id="power" role="switch" aria-checked="true" aria-label="Encender lámpara"><span class="switch-track"><span></span></span><span id="power-label" hidden>Encendida</span></button>
 <div class="temperatures" role="group" aria-label="Temperatura de luz"><button data-temp="warm" aria-pressed="true"><i class="warm"></i>Cálida</button><button data-temp="neutral" aria-pressed="false"><i class="neutral"></i>Neutra</button><button data-temp="cool" aria-pressed="false"><i class="cool"></i>Fría</button></div></div>
 <p id="save-status" class="sr-only" role="status"></p>
 </section>
