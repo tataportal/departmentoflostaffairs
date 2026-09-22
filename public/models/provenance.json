@@ -1,44 +1,5 @@
 [
   {
-    "id": "andon",
-    "source": "Lamparas LED/Revision_v03/manifest.json",
-    "source_sha256": "1d46534449d6dd337c8db4bdccff425bb461816f846fe0dfea36923f9c93f599",
-    "dimensions_m": [
-      0.18000000715255737,
-      0.18000000715255737,
-      0.24000003933906555
-    ],
-    "triangles": 185800,
-    "bytes": 5160828,
-    "web_bytes": 810316
-  },
-  {
-    "id": "toro",
-    "source": "Lamparas LED/Revision_v03/manifest.json",
-    "source_sha256": "1d46534449d6dd337c8db4bdccff425bb461816f846fe0dfea36923f9c93f599",
-    "dimensions_m": [
-      0.6000000238418579,
-      0.6000000238418579,
-      1.1801999807357788
-    ],
-    "triangles": 475648,
-    "bytes": 13318136,
-    "web_bytes": 1894288
-  },
-  {
-    "id": "shoji",
-    "source": "Lamparas LED/Revision_v03/manifest.json",
-    "source_sha256": "1d46534449d6dd337c8db4bdccff425bb461816f846fe0dfea36923f9c93f599",
-    "dimensions_m": [
-      0.12000000476837158,
-      0.05600001662969589,
-      0.24000002443790436
-    ],
-    "triangles": 112342,
-    "bytes": 3177084,
-    "web_bytes": 488396
-  },
-  {
     "id": "pebble",
     "source": "Lamparas LED/Pebble_Pared_Gruesa_v10/manifest.json",
     "source_sha256": "9234b6fc03674b3a6f7d89e29e0c16b8d069a0fa45392daddd55cc65c97bbcfc",
@@ -89,5 +50,44 @@
     "triangles": 1378830,
     "bytes": 38328888,
     "web_bytes": 5444052
+  },
+  {
+    "id": "andon",
+    "source": "Lamparas LED/Produccion_Optimizada_025/manifest.json",
+    "source_sha256": "b1f0b3ac2e512f3707fbd3b43f5eead22a75bff3cbaf40102f48cbacab276f33",
+    "dimensions_m": [
+      0.18000000715255737,
+      0.18000000715255737,
+      0.24000003933906555
+    ],
+    "triangles": 711426,
+    "bytes": 19257928,
+    "web_bytes": 2938224
+  },
+  {
+    "id": "toro",
+    "source": "Lamparas LED/Produccion_Optimizada_025/manifest.json",
+    "source_sha256": "b1f0b3ac2e512f3707fbd3b43f5eead22a75bff3cbaf40102f48cbacab276f33",
+    "dimensions_m": [
+      0.6000000238418579,
+      0.6000000238418579,
+      1.1801999807357788
+    ],
+    "triangles": 1394048,
+    "bytes": 38160084,
+    "web_bytes": 5272716
+  },
+  {
+    "id": "shoji",
+    "source": "Lamparas LED/Produccion_Optimizada_025/manifest.json",
+    "source_sha256": "b1f0b3ac2e512f3707fbd3b43f5eead22a75bff3cbaf40102f48cbacab276f33",
+    "dimensions_m": [
+      0.12000000476837158,
+      0.05600001662969589,
+      0.24000002443790436
+    ],
+    "triangles": 342182,
+    "bytes": 9361628,
+    "web_bytes": 1410956
   }
 ]

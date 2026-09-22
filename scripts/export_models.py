@@ -24,7 +24,7 @@ def mesh_for(p):
  obj.data.set_sharp_from_angle(angle=math.radians(35))
  mesh=obj.data;cache[path]=mesh;bpy.data.objects.remove(obj,do_unlink=True)
  return mesh
-configs=[('andon','Revision_v03','01_Andon_Frame'),('toro','Revision_v03','03_Toro_Stack'),('shoji','Revision_v03','04_Shoji_Wall'),('pebble','Pebble_Pared_Gruesa_v10','01_Pebble_Jardin'),('pebble-compact','Pebble_Pared_Gruesa_v10','02_Pebble_Compacta'),('shibui','SHIBUI_Rosca_025','SHIBUI_Individual'),('shibui-stack','SHIBUI_Rosca_025','SHIBUI_Stack_2_LED')]
+configs=[('andon','Produccion_Optimizada_025','01_Andon_Frame'),('toro','Produccion_Optimizada_025','03_Toro_Stack'),('shoji','Produccion_Optimizada_025','04_Shoji_Wall'),('pebble','Pebble_Pared_Gruesa_v10','01_Pebble_Jardin'),('pebble-compact','Pebble_Pared_Gruesa_v10','02_Pebble_Compacta'),('shibui','SHIBUI_Rosca_025','SHIBUI_Individual'),('shibui-stack','SHIBUI_Rosca_025','SHIBUI_Stack_2_LED')]
 filters=sys.argv[sys.argv.index('--')+1:] if '--' in sys.argv else []
 audit=json.loads((OUT/'provenance.json').read_text()) if filters else []
 for id,folder,key in configs:
@@ -35,7 +35,7 @@ for id,folder,key in configs:
  objs=[]
  for i in instances:
   part=i['part']
-  if part.startswith('00_') or 'Tornillo' in part or 'Bandeja_LED' in part:continue
+  if part.startswith('00_') or 'Bandeja_LED' in part:continue
   p=d['parts'][part];mesh=mesh_for(p).copy()
   material='sand' if 'Arena' in part else ('diffuser' if any(s in part for s in ['Difusor','Pantalla','Piedra']) else 'frame')
   mesh.materials.clear();mesh.materials.append(materials[material])

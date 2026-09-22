@@ -61,13 +61,12 @@ function transition(target,offset,span,animate=true){
 function focus(id,animate=true){
  const item=models.find(m=>m.id===id);if(!item)return;
  const center=item.bounds.getCenter(new THREE.Vector3());
- // Crop to the light-bearing part of a standing lamp; other lamps remain whole.
- if(id==='toro')center.y=item.position[1]+1.07;
+ // Frame the complete approved assembly, including the standing base.
  const portrait=innerWidth/innerHeight<.85;
- const span=({toro:.72,'shibui-stack':.49,shibui:.28,shoji:.45,pebble:.32,'pebble-compact':.26})[id]||.44;
+ const span=({toro:1.62,'shibui-stack':.39,shibui:.215,shoji:.35,pebble:.265,'pebble-compact':.205})[id]||.36;
  // Raise view target slightly downward to put the lamp above the bottom controls.
- orbitYaw=0;orbitPitch=id.startsWith('pebble')?.4:id.startsWith('shibui')?.34:.12;
- const direction=new THREE.Vector3(0,Math.sin(orbitPitch),Math.cos(orbitPitch));
+ orbitYaw=id==='andon'?.32:id==='toro'?.28:id==='shoji'?.16:.12;orbitPitch=id.startsWith('pebble')?.48:id.startsWith('shibui')?.38:id==='andon'?.26:.16;
+ const direction=new THREE.Vector3(Math.sin(orbitYaw)*Math.cos(orbitPitch),Math.sin(orbitPitch),Math.cos(orbitYaw)*Math.cos(orbitPitch));
  const target=center.clone();target.y-=portrait?span*.06:span*.09;
  transition(target,direction.multiplyScalar(4),span*(portrait?1.28:1),animate);
 }
@@ -109,11 +108,11 @@ function updateLighting(t){
  const e=t*t*(3-2*t);
  for(const {item,color,on,fromColor,fromPower,shades} of lighting.changes){
   item.light.color.lerpColors(fromColor,color,e);
-  item.light.intensity=THREE.MathUtils.lerp(fromPower,on?item.power*(item.id.startsWith('pebble')?.2:item.id.startsWith('shibui')?.16:1):0,e);
+  item.light.intensity=THREE.MathUtils.lerp(fromPower,on?item.power*(item.id.startsWith('pebble')?.06:item.id.startsWith('shibui')?.065:item.id==='shoji'?.018:.06):0,e);
   item.bounce.color.copy(item.light.color).lerp(new THREE.Color('#c4b69b'),.18);
-  item.bounce.intensity=item.light.intensity*(item.id.startsWith('pebble')||item.id.startsWith('shibui')?0:.28);
+  item.bounce.intensity=item.light.intensity*.08;
   for(const {m,color:base,emissive,power} of shades){
-   m.emissive.lerpColors(emissive,color,e);m.emissiveIntensity=THREE.MathUtils.lerp(power,on?(item.id.startsWith('pebble')?1.1:item.id==='shoji'?.32:item.id==='toro'?.72:item.id.startsWith('shibui')?3.0:.48):0,e);
+   m.emissive.lerpColors(emissive,color,e);m.emissiveIntensity=THREE.MathUtils.lerp(power,on?(item.id.startsWith('pebble')?2.3:item.id==='shoji'?1.35:item.id==='toro'?2.8:item.id.startsWith('shibui')?2.8:2.2):0,e);
    m.color.lerpColors(base,new THREE.Color(on?'#f5f4ef':'#f5f5f2'),e);
   }
  }
@@ -182,7 +181,7 @@ async function init(){
  await createRoom(scene,renderer);
  // Prefiltered broad reflections give matte surfaces a readable shape.
  const studio=new RoomEnvironment(),pmrem=new THREE.PMREMGenerator(renderer);
- const environment=pmrem.fromScene(studio,.025);scene.environment=environment.texture;scene.environmentIntensity=.16;
+ const environment=pmrem.fromScene(studio,.025);scene.environment=environment.texture;scene.environmentIntensity=.35;
  studio.dispose();pmrem.dispose();
  const loader=new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
  await Promise.all(LAMPS.map(async(def)=>{
@@ -195,14 +194,14 @@ async function init(){
     const shellBounds=new THREE.Box3().setFromObject(obj);
     if(def.id.startsWith('shibui'))obj.material.userData.ribbed=true;
     obj.material=createFilament(obj.material,shellBounds);
-    diffusers.push(obj.material);}else{obj.material.roughness=.58;obj.material.metalness=0;if(def.id.startsWith('shibui')){obj.material=new THREE.MeshPhysicalMaterial({name:obj.material.name,color:obj.material.color,roughness:.36,metalness:0,clearcoat:.24,clearcoatRoughness:.3,envMapIntensity:2.2});}}
+    diffusers.push(obj.material);}else{obj.material=new THREE.MeshPhysicalMaterial({name:obj.material.name,color:obj.material.name==='sand'?0xd9cbb4:0x65412b,roughness:obj.material.name==='sand'?.85:.4,metalness:0,clearcoat:.16,clearcoatRoughness:.4,envMapIntensity:1.4});}
   });
   const bounds=new THREE.Box3().setFromObject(group),anchor=bounds.getCenter(new THREE.Vector3());
   if(def.id==='toro')anchor.y=def.position[1]+1.05;
   if(def.id.startsWith('pebble')&&!stoneBounds.isEmpty())stoneBounds.getCenter(anchor);
   const light=new THREE.PointLight(0xffbc73,def.power,2.7,2);
-  light.position.copy(anchor);if(def.id==='shoji')light.position.z+=.09;
-  light.castShadow=true;light.shadow.mapSize.set(1024,1024);light.shadow.radius=3;light.shadow.camera.near=.015;light.shadow.camera.far=3;light.shadow.bias=-.00015;light.shadow.normalBias=.002;
+  light.position.copy(anchor);if(def.id==='shoji')light.position.z+=.035;
+  light.castShadow=true;light.shadow.mapSize.set(1024,1024);light.shadow.radius=3;light.shadow.camera.near=.015;light.shadow.camera.far=3;light.shadow.bias=-.00015;light.shadow.normalBias=.0004;
   // The static room permits caching all cubemap shadows after first rendering.
   light.shadow.autoUpdate=false;light.shadow.needsUpdate=true;scene.add(light);
   // Broad, surface-coloured fill approximates first-bounce indirect light.
