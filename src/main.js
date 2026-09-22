@@ -24,6 +24,24 @@ const $=id=>document.getElementById(id);
 let storage;try{storage=window.localStorage;}catch{storage=null;}
 let state=loadState(storage);
 const sound=createSound(storage);
+// The introduction is a visual overlay; it never overwrites saved lamp choices.
+let introPhase='waiting',introLit=new Set(),introTimers=[];
+const introOrder=['andon','toro','shoji','shibui','shibui-stack','pebble','pebble-compact'];
+function finishIntro(){
+ introTimers.forEach(clearTimeout);introTimers=[];introPhase='done';
+ $('enter').hidden=true;document.body.classList.remove('introducing');
+ sound.stopSignature();applyLights();
+}
+function startIntro(){
+ if(introPhase!=='waiting')return;
+ introPhase='playing';$('enter').hidden=true;
+ sound.unlock();
+ introOrder.forEach((id,i)=>introTimers.push(setTimeout(()=>{
+  introLit.add(id);sound.signatureNote(i);applyLights();
+ },180+i*480)));
+ introTimers.push(setTimeout(finishIntro,4800));
+}
+$('enter').onclick=startIntro;
 function updateSound(){ $('sound').setAttribute('aria-pressed',String(sound.enabled)); $('sound').setAttribute('aria-label',sound.enabled?'Silenciar sonidos':'Activar sonidos'); $('sound').innerHTML=sound.enabled?speakerOn:speakerOff; $('sound').querySelector('svg').setAttribute('aria-hidden','true'); }
 updateSound();
 $('sound').onclick=()=>{sound.toggle();updateSound();if(sound.enabled)sound.play(selected,'select');};
@@ -43,7 +61,7 @@ const projected=new THREE.Vector3();
 const temperatureButtons=[...document.querySelectorAll('[data-temp]')];
 $('retry').onclick=()=>location.reload();
 function announce(message){$('announcement').textContent=message;}
-function showError(error){console.error(error);$('loading').hidden=true;$('error').hidden=false;$('hint').hidden=true;$('targets').hidden=true;$('controls').hidden=true;$('back').hidden=true;}
+function showError(error){introTimers.forEach(clearTimeout);sound.stopSignature();$('enter').hidden=true;console.error(error);$('loading').hidden=true;$('error').hidden=false;$('hint').hidden=true;$('targets').hidden=true;$('controls').hidden=true;$('back').hidden=true;}
 function fit(){
  const w=innerWidth,h=innerHeight,aspect=w/h;
  renderer.setSize(w,h);composer.setSize(w,h);
@@ -71,6 +89,7 @@ function focus(id,animate=true){
  transition(target,direction.multiplyScalar(4),span*(portrait?1.28:1),animate);
 }
 function selectLamp(id){
+ if(introPhase!=='done')finishIntro();
  const controlHadFocus=$('controls').contains(document.activeElement);
  selected=id;
  document.body.classList.add('focused');
@@ -98,8 +117,9 @@ function updatePanel(){
 function applyLights(animate=true){
  const changes=models.map(item=>{
   const s=state[item.id],color=new THREE.Color(TEMPERATURES[s.temperature].color);
-  item.button.setAttribute('aria-label',`${item.name}, ${s.on?'encendida':'apagada'}, luz ${TEMPERATURES[s.temperature].label.toLowerCase()}`);
-  return {item,color,on:s.on,fromColor:item.light.color.clone(),fromPower:item.light.intensity,
+  const on=introPhase==='done'?s.on:introLit.has(item.id);
+  item.button.setAttribute('aria-label',`${item.name}, ${on?'encendida':'apagada'}, luz ${TEMPERATURES[s.temperature].label.toLowerCase()}`);
+  return {item,color,on,fromColor:item.light.color.clone(),fromPower:item.light.intensity,
    shades:item.diffusers.map(m=>({m,color:m.color.clone(),emissive:m.emissive.clone(),power:m.emissiveIntensity}))};
  });
  lighting={start:performance.now(),changes};
@@ -259,8 +279,9 @@ async function init(){
  fit();applyLights(false);composer.render();
  moon.shadow.autoUpdate=false;moon.shadow.needsUpdate=false;
  $('loading').hidden=true;
+ document.body.classList.add('introducing');$('enter').hidden=false;
  window.addEventListener('resize',fit);
- document.addEventListener('visibilitychange',()=>{if(!document.hidden){lastRender=0;dirty=true;requestFrame();}});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden&&introPhase==='playing')finishIntro();if(!document.hidden){lastRender=0;dirty=true;requestFrame();}});
  dirty=true;requestFrame();
 }
 init().catch(showError);

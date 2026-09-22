@@ -19,3 +19,8 @@
 .temperatures button{border-radius:0;font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;font-size:10px;letter-spacing:.035em}
 .temperatures button[aria-pressed=true]{background:#f2eee410;border-bottom-color:#f2eee478}
 @media(max-width:600px){.brand-signature{top:max(20px,env(safe-area-inset-top));left:20px;font-size:8px;letter-spacing:.23em}.focused .brand-signature{right:20px}#controls h1{font-size:12px}#lamp-price{font-size:11px}}
+
+/* A quiet entrance; the unlit room remains visible. */
+#enter{position:absolute;bottom:max(38px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:4;background:#171918cc;border:1px solid #f2eee43b;padding:14px 24px;color:#f2eee4;font:11px "SFMono-Regular",Consolas,monospace;letter-spacing:.16em;text-transform:uppercase;border-radius:2px}
+#enter span{margin-left:18px;color:#d6c19e}#enter:hover{background:#35322a}
+.introducing .target:before{opacity:0}.introducing .target:hover:before,.introducing .target:focus-visible:before{opacity:1}
