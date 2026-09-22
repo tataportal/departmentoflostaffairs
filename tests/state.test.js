@@ -1,0 +1,7 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {LAMPS,loadState,saveState,normalizeState,STORAGE_KEY} from '../src/state.js';
+function memory(){const data=new Map();return{getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v)}}
+test('neutral light and off states survive re-opening independently',()=>{const storage=memory();const state=loadState(storage);state.shibui={on:true,temperature:'neutral'};state.andon={on:false,temperature:'cool'};assert.equal(saveState(storage,state),true);const reopened=loadState(storage);assert.deepEqual(reopened.shibui,{on:true,temperature:'neutral'});assert.deepEqual(reopened.andon,{on:false,temperature:'cool'});assert.deepEqual(reopened.toro,{on:true,temperature:'warm'});assert.equal(Object.keys(reopened).length,LAMPS.length);});
+test('old, malformed and untrusted data never break the scene',()=>{const storage=memory();storage.setItem(STORAGE_KEY,'{bad');assert.deepEqual(loadState(storage),normalizeState(null));assert.deepEqual(normalizeState({shibui:{on:'false',temperature:'__proto__'}}).shibui,{on:true,temperature:'warm'});assert.equal('extra' in normalizeState({extra:{on:true}}),false);});
+test('disabled storage degrades to a working unsaved scene',()=>{const blocked={getItem(){throw Error('blocked')},setItem(){throw Error('blocked')}};assert.equal(loadState(blocked).shibui.on,true);assert.equal(saveState(blocked,normalizeState(null)),false);});

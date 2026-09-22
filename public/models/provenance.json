@@ -1,0 +1,93 @@
+[
+  {
+    "id": "andon",
+    "source": "Lamparas LED/Revision_v03/manifest.json",
+    "source_sha256": "1d46534449d6dd337c8db4bdccff425bb461816f846fe0dfea36923f9c93f599",
+    "dimensions_m": [
+      0.18000000715255737,
+      0.18000000715255737,
+      0.24000003933906555
+    ],
+    "triangles": 59340,
+    "bytes": 1343836,
+    "web_bytes": 213096
+  },
+  {
+    "id": "toro",
+    "source": "Lamparas LED/Revision_v03/manifest.json",
+    "source_sha256": "1d46534449d6dd337c8db4bdccff425bb461816f846fe0dfea36923f9c93f599",
+    "dimensions_m": [
+      0.6000000238418579,
+      0.6000000238418579,
+      1.1801999807357788
+    ],
+    "triangles": 247500,
+    "bytes": 7143796,
+    "web_bytes": 482400
+  },
+  {
+    "id": "shoji",
+    "source": "Lamparas LED/Revision_v03/manifest.json",
+    "source_sha256": "1d46534449d6dd337c8db4bdccff425bb461816f846fe0dfea36923f9c93f599",
+    "dimensions_m": [
+      0.12000000476837158,
+      0.05600001662969589,
+      0.24000002443790436
+    ],
+    "triangles": 24232,
+    "bytes": 684872,
+    "web_bytes": 113204
+  },
+  {
+    "id": "pebble",
+    "source": "Lamparas LED/Pebble_Pared_Gruesa_v10/manifest.json",
+    "source_sha256": "9234b6fc03674b3a6f7d89e29e0c16b8d069a0fa45392daddd55cc65c97bbcfc",
+    "dimensions_m": [
+      0.20000587403774261,
+      0.2000058889389038,
+      0.09294889867305756
+    ],
+    "triangles": 54000,
+    "bytes": 1163184,
+    "web_bytes": 262240
+  },
+  {
+    "id": "pebble-compact",
+    "source": "Lamparas LED/Pebble_Pared_Gruesa_v10/manifest.json",
+    "source_sha256": "9234b6fc03674b3a6f7d89e29e0c16b8d069a0fa45392daddd55cc65c97bbcfc",
+    "dimensions_m": [
+      0.14486533403396606,
+      0.14463481307029724,
+      0.07674888521432877
+    ],
+    "triangles": 36000,
+    "bytes": 757644,
+    "web_bytes": 171092
+  },
+  {
+    "id": "shibui",
+    "source": "Lamparas LED/SHIBUI_Rosca_025/manifest.json",
+    "source_sha256": "e53101d470f627f35bdd674391512bc2e8d07eef2bc5881b8c537dc905a0a6f1",
+    "dimensions_m": [
+      0.1534307897090912,
+      0.15343081951141357,
+      0.1324426382780075
+    ],
+    "triangles": 547556,
+    "bytes": 13133756,
+    "web_bytes": 149652
+  },
+  {
+    "id": "shibui-stack",
+    "source": "Lamparas LED/SHIBUI_Rosca_025/manifest.json",
+    "source_sha256": "e53101d470f627f35bdd674391512bc2e8d07eef2bc5881b8c537dc905a0a6f1",
+    "dimensions_m": [
+      0.1534307897090912,
+      0.15343081951141357,
+      0.2643851935863495
+    ],
+    "triangles": 1088124,
+    "bytes": 26133348,
+    "web_bytes": 247980
+  }
+]
