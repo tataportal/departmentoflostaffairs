@@ -83,7 +83,23 @@ function fit(){
  const w=innerWidth,h=innerHeight,aspect=w/h;
  renderer.setSize(w,h);composer.setSize(w,h);
  if(entryCamera){entryCamera.aspect=aspect;if(!cameraTravel)entryCamera.fov=entryFov(aspect);entryCamera.updateProjectionMatrix();}
- homeSpan=Math.max(5.7,6.5/aspect);
+ // Fit the actual cutaway silhouette, not an arbitrary fixed zoom.
+ const forward=homeOffset.clone().normalize();
+ const right=new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),forward).normalize();
+ const up=new THREE.Vector3().crossVectors(forward,right);
+ let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+ room.updateMatrixWorld(true);
+ for(const mesh of room.children){
+  if(!mesh.isMesh)continue; // The entrance enclosure is a separate group.
+  mesh.geometry.computeBoundingBox();const bounds=mesh.geometry.boundingBox;
+  for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z]){
+   const point=new THREE.Vector3(x,y,z).applyMatrix4(mesh.matrixWorld);
+   const px=point.dot(right),py=point.dot(up);
+   minX=Math.min(minX,px);maxX=Math.max(maxX,px);minY=Math.min(minY,py);maxY=Math.max(maxY,py);
+  }
+ }
+ homeAim.copy(right).multiplyScalar((minX+maxX)/2).addScaledVector(up,(minY+maxY)/2);
+ homeSpan=(maxX-minX)/(.95*aspect);
  camera.left=-aspect/2;camera.right=aspect/2;camera.top=.5;camera.bottom=-.5;
  animation=null;if(selected)focus(selected,false);else{camera.zoom=1/homeSpan;camera.position.copy(homeAim).add(homeOffset);aim.copy(homeAim);camera.lookAt(aim);}
  camera.updateProjectionMatrix();dirty=true;requestFrame();
