@@ -1,4 +1,5 @@
 import {storyFor} from './stories.js';
+import {dimensions} from './specifications.js';
 import {emissionGain} from './lighting.js';
 import './style.css';
 import speakerOn from '@phosphor-icons/core/assets/regular/speaker-high.svg?raw';
@@ -130,6 +131,7 @@ function updatePanel(){
  $('story-name').textContent=item.name;
  $('story-title').textContent=story.title;
  $('story-text').textContent=story.text;
+ $('spec-dimensions').textContent=dimensions[selected];
  $('lamp-name').textContent=item.name;$('lamp-kind').textContent=item.kind;
  $('lamp-price').hidden=!Number.isFinite(item.priceUSD);
  $('lamp-price').textContent=Number.isFinite(item.priceUSD)?`US$ ${item.priceUSD}`:'';
