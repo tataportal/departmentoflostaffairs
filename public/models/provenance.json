@@ -1,19 +1,6 @@
 [
   {
-    "id": "pebble",
-    "source": "Lamparas LED/Pebble_Pared_Gruesa_v10/manifest.json",
-    "source_sha256": "9234b6fc03674b3a6f7d89e29e0c16b8d069a0fa45392daddd55cc65c97bbcfc",
-    "dimensions_m": [
-      0.20000000298023224,
-      0.20000000298023224,
-      0.09294930845499039
-    ],
-    "triangles": 1776148,
-    "bytes": 43339736,
-    "web_bytes": 5803236
-  },
-  {
-    "id": "pebble-compact",
+    "id": "maru-compact",
     "source": "Lamparas LED/Pebble_Pared_Gruesa_v10/manifest.json",
     "source_sha256": "9234b6fc03674b3a6f7d89e29e0c16b8d069a0fa45392daddd55cc65c97bbcfc",
     "dimensions_m": [
@@ -24,19 +11,6 @@
     "triangles": 1464462,
     "bytes": 35318064,
     "web_bytes": 4718344
-  },
-  {
-    "id": "shibui",
-    "source": "Lamparas LED/SHIBUI_Rosca_025/manifest.json",
-    "source_sha256": "e53101d470f627f35bdd674391512bc2e8d07eef2bc5881b8c537dc905a0a6f1",
-    "dimensions_m": [
-      0.1534307897090912,
-      0.15343081951141357,
-      0.13244260847568512
-    ],
-    "triangles": 837002,
-    "bytes": 23138768,
-    "web_bytes": 3374916
   },
   {
     "id": "shibui-stack",
@@ -89,5 +63,95 @@
     "triangles": 342182,
     "bytes": 9361628,
     "web_bytes": 1410956
+  },
+  {
+    "id": "maru",
+    "source": "3D/MARU.3mf",
+    "source_sha256": "0f8c711a71973ea88343912c5f4c979e9e9df3f113a0d669b79c87fe0871e3c6",
+    "dimensions_m": [
+      0.17999012768268585,
+      0.17999012768268585,
+      0.0844794437289238
+    ],
+    "triangles": 454772,
+    "bytes": 10743112,
+    "assembly_parts": [
+      {
+        "name": "MARU_Base",
+        "material": "frame",
+        "translation_mm": [
+          0,
+          0,
+          15
+        ],
+        "flip_x": false
+      },
+      {
+        "name": "MARU_Disc",
+        "material": "sand",
+        "translation_mm": [
+          0,
+          0,
+          18.8
+        ],
+        "flip_x": false
+      },
+      {
+        "name": "MARU_Three_Stones",
+        "material": "diffuser",
+        "translation_mm": [
+          0.5632286,
+          -0.1088848,
+          52.2397194
+        ],
+        "flip_x": false
+      }
+    ],
+    "web_bytes": 1739372
+  },
+  {
+    "id": "shibui",
+    "source": "3D/SHIBUI.3mf",
+    "source_sha256": "0bec0df5262966a223f32824f762c5a5ad5f2383ccec0b25539186a0682de600",
+    "dimensions_m": [
+      0.1534307897090912,
+      0.15343081951141357,
+      0.1354426145553589
+    ],
+    "triangles": 744122,
+    "bytes": 20265016,
+    "assembly_parts": [
+      {
+        "name": "SHIBUI_Shade",
+        "material": "diffuser",
+        "translation_mm": [
+          0,
+          0,
+          68.0712997
+        ],
+        "flip_x": false
+      },
+      {
+        "name": "SHIBUI_Base",
+        "material": "frame",
+        "translation_mm": [
+          0,
+          0,
+          7.73100471
+        ],
+        "flip_x": false
+      },
+      {
+        "name": "SHIBUI_Top_Ring",
+        "material": "frame",
+        "translation_mm": [
+          0,
+          0,
+          131.8425995
+        ],
+        "flip_x": true
+      }
+    ],
+    "web_bytes": 3054412
   }
 ]

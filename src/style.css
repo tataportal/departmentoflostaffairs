@@ -95,3 +95,5 @@
 @media(max-width:700px){#enter.shoji-entry .door-sign>span{font-size:clamp(19px,5.2vw,30px);letter-spacing:.15em;padding-left:.15em}#enter.shoji-entry .door-sign small{font-size:8px;margin-top:20px;letter-spacing:.18em}}
 
 #specifications{margin-top:18px;font-size:11px;line-height:1.5}#specifications summary{cursor:pointer;list-style:none;font:10px "SFMono-Regular",Consolas,monospace;letter-spacing:.10em;text-transform:uppercase}#specifications summary::-webkit-details-marker{display:none}#specifications summary::after{content:" +"}#specifications[open] summary::after{content:" −"}#specifications dl{margin:14px 0 0;display:grid;grid-template-columns:auto 1fr;gap:8px 16px}#specifications dt{opacity:.65;text-align:left}#specifications dd{margin:0;text-align:right}
+
+#lamp-availability{margin:7px 0 0;font:9px "SFMono-Regular",Consolas,monospace;letter-spacing:.13em;text-transform:uppercase;color:#d2cbbd}

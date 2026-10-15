@@ -1,5 +1,5 @@
 // One shared tuning and timbre for the entrance and every lamp interaction.
-export const SIGNATURE_ORDER=['andon','toro','shoji','shibui','shibui-stack','pebble','pebble-compact'];
+export const SIGNATURE_ORDER=['andon','toro','shoji','shibui','shibui-stack','maru','maru-compact'];
 const SOUND_KEY='lamparas.sound.v1';
 export function createSound(storage){
  let enabled=true,ctx,master;
